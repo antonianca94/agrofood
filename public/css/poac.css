@@ -337,3 +337,23 @@ body.home .product-image-div {
 .table>:not(:last-child)>:last-child>* {
     border-bottom-color: #d5d5d5 !important;
 }
+#cart-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 30px;
+    padding-bottom: 15px;
+    font-weight: 600;
+}
+.cart-line-items {
+    display: flex;
+    justify-content: space-between;
+}
+
+td.cart-line-items {
+    padding: 10px 10px 12px;
+    border-bottom: 1.5px dashed #6a5f5f59;
+}
+span#p-quantity {
+    font-size: 0.9rem;
+    letter-spacing: -0.5px;
+}

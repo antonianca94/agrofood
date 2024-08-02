@@ -92,12 +92,18 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td id="cart-total">Subtotal <span class="c-orange"><%= cartTotalFormatted %></span></td>
-                            </tr>
+                            <% cartItems.forEach(item => { %>
+                                <tr>
+                                    <td class="cart-line-items"><span class="c-grey"><%= item.productName %> <span id="p-quantity">x<%= item.quantity %></span></span><span><%= item.totalPriceFormatted %></span></td>
+                                </tr>
+                            <% }); %>
+      
                         </tbody>
                     </table>
                 </div>
+
+                <span id="cart-total">Subtotal <span class="c-orange"><%= cartTotalFormatted %></span></span>
+
                 <button type="button" id="FinalizeButton" class="btn btn-primary mt-3 mb-3">Finalizar Compra</button>
 
             </div>
@@ -126,7 +132,7 @@ function updateQuantity(itemId, action, button) {
                 const cartTotalElement = $('#cart-total');
                 quantityInput.val(response.newQuantity);
                 totalPriceElement.text(response.newTotalPriceFormatted);
-                cartTotalElement.text('Total: ' + response.cartTotalFormatted);
+                cartTotalElement.text('Subtotal ' + response.cartTotalFormatted);
             },
             error: function(error) {
                 Swal.fire({
