@@ -46,7 +46,7 @@ app.set('views', './views');
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
-    secret: 'poac-marketplace',
+    secret: 'agrofood-marketplace',
     resave: false,
     saveUninitialized: true
 }));
@@ -227,7 +227,7 @@ async function executeQuery(sql, values = []) {
         host: 'localhost',
         user: 'root',
         password: '',
-        database: 'poac'
+        database: 'agrofood'
     });
 
     try {

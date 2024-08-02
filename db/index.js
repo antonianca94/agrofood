@@ -6,7 +6,7 @@ async function executeQuery(sql, values = []) {
         host: 'localhost',
         user: 'root',
         password: '',
-        database: 'poac'
+        database: 'agrofood'
     });
 
     try {
