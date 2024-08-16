@@ -4,24 +4,27 @@ const path = require('path');
 const sharp = require('sharp');
 const fs_promisses = require('fs').promises; // Importar o módulo fs com Promises
 const fs = require('fs'); // Importar o módulo fs com Promises
+const axios = require('axios');
 
 const getAllProducts = async (req, res) => {
     try {
         let products;
-        const userId = req.session.passport.user; // Obtém o ID do usuário autenticado
+        const userId = req.user.id; // Obtém o ID do usuário autenticado
+        const roleId = req.user.roles_id; // Obtém o roles_id do usuário autenticado
 
-        if (req.user.roles_id === 1) { // Se o usuário for um administrador
-            // Busca todos os produtos
-            products = await executeQuery('SELECT products.id, products.sku, products.name, products.price, products.quantity, categories_products.name AS category_name FROM products INNER JOIN categories_products ON products.categories_products_id = categories_products.id');
+        if (roleId === 1) { // Se o usuário for um administrador
+            const response = await axios.get(`http://localhost:3001/products`);
+            products = response.data.data;
         } else {
-            // Busca apenas os produtos do usuário normal
-            products = await executeQuery('SELECT products.id, products.sku, products.name, products.price, products.quantity, categories_products.name AS category_name FROM products INNER JOIN categories_products ON products.categories_products_id = categories_products.id WHERE products.users_id = ?', [userId]);
+            const response = await axios.get(`http://localhost:3001/products/user_id/${userId}`);
+            products = response.data.data;
         }
 
         const successMessage = req.flash('success');
-        res.render('products/index', { pageTitle: 'Produtos', products, successMessage, username: req.user.username, userRole: req.user.roles_id });
+        res.render('products/index', { pageTitle: 'Produtos', products, successMessage, username: req.user.username, userRole: roleId });
 
     } catch (error) {
+        console.error(error);
         res.status(500).send('Erro ao buscar produtos');
     }
 };
@@ -306,7 +309,8 @@ const getProductBySKU = async (req, res) => {
 
     try {
         // Consulta para obter as informações do produto pelo SKU
-        const product = await executeQuery('SELECT * FROM products WHERE sku = ?', [sku]);
+        const productResponse = await axios.get(`http://localhost:3001/products/${sku}`);
+        const product = productResponse.data;
 
         // Verificar se o produto foi encontrado
         if (product.length === 0) {
@@ -314,8 +318,11 @@ const getProductBySKU = async (req, res) => {
         }
 
         // Consulta para obter todas as imagens relacionadas ao produto
-        const images = await executeQuery('SELECT * FROM images WHERE products_id = ?', [product[0].id]);
-        const vendor = await executeQuery('SELECT * FROM vendors WHERE users_id = ?', [product[0].users_id]);
+        const imagesResponse = await axios.get(`http://localhost:3001/images/${product.id}`);
+        const images = imagesResponse.data;
+
+        const vendor = await executeQuery('SELECT * FROM vendors WHERE users_id = ?', [product.users_id]);
+
         res.render('site/product/index', { 
             pageTitle: 'Produto', 
             product,

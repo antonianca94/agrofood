@@ -1,10 +1,13 @@
 
 const { executeQuery } = require('../db');
+const axios = require('axios');
 
 // Função para obter todas as funções
 const getAllRoles = async (req, res) => {
     try {
-        const roles = await executeQuery('SELECT * FROM roles');
+        let roles;
+        const response = await axios.get(`http://localhost:3001/roles`);
+        roles = response.data;
         const successMessage = req.flash('success'); 
         res.render('roles/index', { pageTitle: 'Roles', roles, successMessage, username: req.user.username, userRole: req.user.roles_id });
 
