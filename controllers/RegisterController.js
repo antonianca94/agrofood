@@ -30,7 +30,7 @@ const registerUser = async (req, res) => {
         }
 
         // Insere o usuário na tabela users
-        const result = await executeQuery('INSERT INTO users (username, password, name, surname, roles_id, cpf) VALUES (?, ?, ?, ?, 1, ?)', [username, password, name, surname, cpf]);
+        const result = await executeQuery('INSERT INTO users (username, password, name, surname, roles_id, cpf) VALUES (?, ?, ?, ?, 2, ?)', [username, password, name, surname, cpf]);
 
         // Obtém o ID do usuário inserido
         const userId = result.insertId;

@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const axios = require('axios');
 
 const RoleController = require('./controllers/RoleController');
 const userController = require('./controllers/UserController'); 
@@ -145,13 +146,9 @@ app.get('/', async (req, res) => {
 
     const user = req.user; // Obter o usuário autenticado, se estiver disponível
 
-    const productsQuery = `
-    SELECT p.*, i.path AS imagePath
-    FROM products p
-    LEFT JOIN images i ON p.id = i.products_id
-    WHERE i.type = 'featured_image'
-`;
-const products = await executeQuery(productsQuery);
+    const response = await axios.get(`http://localhost:3001/products/home`);
+    products = response.data.data;
+    
     // Renderiza o arquivo login.ejs
     res.render('site/home', { pageTitle: 'Home', message: req.flash('error'), products, user });
 });

@@ -1,20 +1,26 @@
 const { executeQuery } = require('../db');
+const axios = require('axios');
 
 // Função para obter todos os usuários
 const getAllUsers = async (req, res) => {
     try {
-        const users = await executeQuery('SELECT users.*, roles.name AS role_name FROM users INNER JOIN roles ON users.roles_id = roles.id');
+        let users;
+        const response = await axios.get(`http://localhost:3001/users`);
+        
+        users = response.data;
+
         const successMessage = req.flash('success'); 
         res.render('users/index', { pageTitle: 'Usuários', users, successMessage, username: req.user.username, userRole: req.user.roles_id });
 
     } catch (error) {
-        res.status(500).send('Erro ao buscar usuários');
+        res.status(500).send('Erro ao buscar usuários' +error);
     }
 };
 
 // Função para exibir o formulário de criação de novo usuário
 const showNewUserForm = async (req, res) => {
-    const roles = await executeQuery('SELECT * FROM roles');
+    let response = await axios.get(`http://localhost:3001/roles`);
+    let roles = response.data;
     res.render('users/new', { pageTitle: 'Inserir Usuário' , roles, username: req.user.username, userRole: req.user.roles_id });
 };
 
@@ -37,15 +43,20 @@ const createUser = async (req, res) => {
     }
 };
 
-// Função para excluir um usuário
 const deleteUser = async (req, res) => {
     const userId = req.params.id;
-    console.log(userId);
     try {
-        await executeQuery('DELETE FROM users WHERE id = ?', [userId]);
-        res.status(200).json({ message: 'Usuário excluído com sucesso!' });
+        // Faz a requisição DELETE para a API que lida com a exclusão do usuário
+        const response = await axios.delete(`http://localhost:3001/users/${userId}`);
+
+        // Verifica se a API retornou uma resposta de sucesso
+        if (response.status === 200) {
+            res.status(200).json({ message: 'Usuário excluído com sucesso!' });
+        } else {
+            res.status(response.status).json({ message: response.data.message });
+        }
     } catch (error) {
-        console.error('Erro ao excluir o Usuário:', error);
+        console.error('Erro ao excluir o Usuário:', error.message || error);
         res.status(500).json({ error: 'Erro ao excluir o Usuário' });
     }
 };
