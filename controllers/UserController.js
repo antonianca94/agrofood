@@ -61,14 +61,25 @@ const deleteUser = async (req, res) => {
     }
 };
 
-// Função para exibir o formulário de edição de usuário
 const showEditUserForm = async (req, res) => {
     const userId = req.params.id;
     try {
-        const [user] = await executeQuery('SELECT * FROM users WHERE id = ?', [userId]);
-        const [role] = await executeQuery('SELECT * FROM roles WHERE id = ?', [user.roles_id]);
-        const roles = await executeQuery('SELECT * FROM roles');
-        res.render('users/edit', { pageTitle: 'Editar Usuário', user, role, roles, username: req.user.username, userRole: req.user.roles_id });
+        // Consumir a API para obter os detalhes do usuário
+        const userResponse = await axios.get(`http://localhost:3001/users/details/${userId}`);
+        const user = userResponse.data; // Dados do usuário
+
+        // Consultar as roles disponíveis
+        let rolesResponse = await axios.get(`http://localhost:3001/roles`);
+        let roles = rolesResponse.data;
+
+        // Retornar os dados renderizados
+        res.render('users/edit', {
+            pageTitle: 'Editar Usuário',
+            user,
+            roles,
+            username: req.user.username,
+            userRole: req.user.roles_id
+        });
     } catch (error) {
         res.status(500).send('Erro ao buscar usuário para edição');
     }
@@ -77,14 +88,32 @@ const showEditUserForm = async (req, res) => {
 // Função para atualizar um usuário
 const updateUser = async (req, res) => {
     const userId = req.params.id;
-
     const { username, password, name, role } = req.body;
+
+    // Objeto com os dados que precisam ser atualizados
+    const dataToUpdate = {};
+    if (username) dataToUpdate.username = username;
+    if (password) dataToUpdate.password = password;
+    if (name) dataToUpdate.name = name;
+    if (role) dataToUpdate.roles_id = role; // Supondo que "role" seja o ID da role
+
     try {
-        await executeQuery('UPDATE users SET username = ?, password = ?, name = ? , roles_id = ? WHERE id = ?', [username, password, name, role, userId]);
-        req.flash('success', 'Usuário atualizado com sucesso!');
-        res.redirect('/users');
+        // Fazendo a requisição PATCH para a API
+        const response = await axios.patch(`http://localhost:3001/users/${userId}`, dataToUpdate, {
+            headers: {
+                'Content-Type': 'application/json', // Garantindo que o Content-Type seja JSON
+            },
+        });
+
+        if (response.status === 200) {
+            req.flash('success', 'Usuário atualizado com sucesso!');
+            res.redirect('/users');
+        } else {
+            res.status(response.status).send(response.data.message || 'Erro ao atualizar o usuário');
+        }
     } catch (error) {
-        res.status(500).send('Erro ao atualizar a Usuário');
+        console.error(error);
+        res.status(500).send('Erro ao atualizar o usuário: ' + error.message);
     }
 };
 
