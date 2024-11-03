@@ -4,11 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= pageTitle %></title>
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Inter:wght@200;300;400;500;600;700;800;900&display=swap');
+
+        .register-container {
+            padding: 40px;
+            background-color: #fff; 
+            border-radius: 10px; 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+            margin-bottom: 40px !important;
+        }
+        .btn-primary {
+            color: #fff;
+            background-color: #d96900;
+            border-color: #d96900;
+        }
+        .btn-primary:hover {
+            color: #fff;
+            background-color: #d96900;
+            border-color: #d96900;
+        }
+        a {
+            color: #d96900;
+        }
+        .icone-cadastro-produtor{
+            color: #d96900;
+            font-size: 1.2rem;
+            line-height: 1.5rem;
+        }
+        label {
+            font-size: 0.91rem;
+            letter-spacing: 0px;
+        }
+        .form-control {
+            font-size: 0.9rem;
+        }
+        .form-control:focus {
+            border-color: #d96900;
+            box-shadow: 0 0 0 0.25rem rgb(217 105 0 / 12%);
+        }
+        .alert.alert-success {
+            font-size: 0.9rem;
+            padding: 0.7rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .alert.alert-danger {
+            font-size: 0.9rem;
+            padding: 0.7rem;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+    
 </head>
 <body>
     <%- include('../header') %>
     <div class="main-content d-xxl-flex d-xl-flex d-lg-flex"> 
-        <%- include('../sidebar',{ pageType: 'Categorias' }) %>
+        <%- include('../sidebar',{ pageType: 'Produtores', userRole }) %>
         <div class="container mt-5 mb-5 m-xxl-4 m-xl-4 m-lg-4 m-md-4 m-sm-4">
             <div class="title-section">
                 <div class="d-flex justify-content-start align-items-center mb-4">
@@ -16,29 +73,146 @@
                 </div>
             </div>
             <div class="content-section bg-white bg-body rounded p-4">
-                <form action="/categories" method="post">
-                    <div class="row mb-3">
-                        <div class="form-group col">
-                            <label for="name" class="form-label">Nome</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
+                <div class="d-flex justify-content-start mb-4">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <i class="bi bi-person icone-cadastro-produtor pr-2"></i> 
+                    </div>
+                    <h5 class="text-left m-0">Dados pessoais</h5>
+                </div>
+                <form action="/vendors" method="post" id="createProductor">
+                    <div class="row">
+                        <div class="col" style="display: none;">
+                            <div class="form-group">
+                                <input type="text" value="" class="form-control" id="users_id" name="users_id">
+                            </div>
                         </div>
-                        <div class="form-group col">
-                            <label for="price" class="form-label">Descrição</label>
-                            <input type="text" class="form-control" id="description" name="description">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Nome</label>
+                                    <input type="text" value="" class="form-control" id="name" name="name">
+                                    <div class="invalid-feedback" id="nameError"></div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="surname" class="form-label">Sobrenome</label>
+                                    <input type="text" value="" class="form-control" id="surname" name="surname">
+                                    <div class="invalid-feedback" id="surnameError"></div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="cpf" class="form-label">CPF</label>
+                                    <input type="text" value="" class="form-control" id="cpf" name="cpf">
+                                    <div class="invalid-feedback" id="cpfError"></div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="cpf" class="form-label">Telefone</label>
+                                    <input type="text" value="" class="form-control" id="phone" name="phone">
+                                    <div class="invalid-feedback" id="phoneError"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="form-group col-12">
-                            <label for="select_parent" class="form-label">Categoria Principal</label>
-                            <select class="form-control" name="parent_id" id="select_parent">
-                                <option value="0">Sem principal</option> <!-- Criar uma opção para cada ID -->
-                                <% categories.forEach(category => { %> <!-- Iterar sobre as categorias -->
-                                    <option value="<%= category.id %>"><%= category.name %></option> <!-- Criar uma opção para cada ID -->
-                                <% }); %>
-                            </select>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="username" class="form-label">Usuário</label>
+                                    <input type="text" value="" class="form-control" id="username" name="username">
+                                    <div class="invalid-feedback" id="usernameError"></div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="email" class="form-label">E-mail</label>
+                                    <input type="text" value="" class="form-control" id="email" name="email">
+                                    <div class="invalid-feedback" id="emailError"></div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="password" class="form-label">Senha</label>
+                                    <input type="text" value="" class="form-control" id="password" name="password">
+                                    <div class="invalid-feedback" id="passwordError"></div>
+                            </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
+                <div class="register-hr mt-4 mb-4">
+                    <hr>
+                </div>
+                <div class="d-flex justify-content-start mb-4">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <i class="bi bi-shop-window icone-cadastro-produtor pr-2"></i> 
+                    </div>
+                    <h5 class="text-left m-0">Dados da empresa</h5>
+                </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="cnpf" class="form-label">CNPJ</label>
+                                    <input type="text" value="" class="form-control" id="cnpj" name="cnpj">
+                                    <div class="invalid-feedback" id="cnpjError"></div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Nome da Empresa</label>
+                                    <input type="text" value="" class="form-control" id="company_name" name="company_name">
+                                    <div class="invalid-feedback" id="company_nameError"></div>
+                            </div>
+                        </div>
+        
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name" class="form-label">CEP</label>
+                                    <input type="text" value="" class="form-control" id="cep" name="cep" onchange="preencherDadosPorCEP()">
+                                    <div class="invalid-feedback" id="cepError"></div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Rua</label>
+                                    <input type="text" value="" class="form-control" id="street" name="street">
+                                    <div class="invalid-feedback" id="streetError"></div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Bairro</label>
+                                    <input type="text" value="" class="form-control" id="neighborhood" name="neighborhood">
+                                    <div class="invalid-feedback" id="neighborhoodError"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Cidade</label>
+                                    <input type="text" value="" class="form-control" id="city" name="city">
+                                    <div class="invalid-feedback" id="cityError"></div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Estado</label>
+                                    <input type="text" value="" class="form-control" id="state" name="state">
+                                    <div class="invalid-feedback" id="stateError"></div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="name" class="form-label">País</label>
+                                    <input type="text" value="" class="form-control" id="country" name="country">
+                                    <div class="invalid-feedback" id="countryError"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
                 </form>
             </div>
             <!-- FOOTER -->

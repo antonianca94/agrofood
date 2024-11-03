@@ -5,7 +5,7 @@ const axios = require('axios');
 const getAllUsers = async (req, res) => {
     try {
         let users;
-        const response = await axios.get(`http://localhost:3001/users`);
+        const response = await axios.get(`http://127.0.0.1:3002/users`);
         
         users = response.data;
 
@@ -19,27 +19,46 @@ const getAllUsers = async (req, res) => {
 
 // Função para exibir o formulário de criação de novo usuário
 const showNewUserForm = async (req, res) => {
-    let response = await axios.get(`http://localhost:3001/roles`);
+    let response = await axios.get(`http://127.0.0.1:3002/roles`);
     let roles = response.data;
     res.render('users/new', { pageTitle: 'Inserir Usuário' , roles, username: req.user.username, userRole: req.user.roles_id });
 };
 
 // Função para criar um novo usuário
 const createUser = async (req, res) => {
-    const { name, surname, cpf, username, role, password } = req.body;
+    const { name, surname, cpf, username, password } = req.body;
     const userId = req.session.passport.user; 
+    const role_id = parseInt(req.body.role, 10); // Converte para inteiro
+    const status = 1;
 
+    // Verifica se o usuário está autenticado
     if (!userId) {
-        return res.status(401).send('Usuário não autenticado');
+        return res.status(401).json({ error: 'Usuário não autenticado' });
+    }
+
+    // Verifica se os campos obrigatórios estão definidos
+    if (!name || !surname || !cpf || !username || !password || isNaN(role_id)) {
+        return res.status(400).json({ error: 'Campos obrigatórios estão ausentes ou inválidos' });
     }
 
     try {
-        await executeQuery('INSERT INTO users (name, surname, cpf, username, roles_id, password) VALUES (?, ?, ?, ?, ?, ?)', [name, surname, cpf, username, role, password]);
+        // Faz a requisição POST para a API para criar o usuário
+        const response = await axios.post('http://127.0.0.1:3002/users', {
+            name,
+            surname,
+            cpf,
+            username,
+            password,
+            roles_id: role_id,
+            status
+        });
+
+        // Retorna a resposta da API
         req.flash('success', 'Usuário cadastrado com sucesso!');
         res.redirect('/users');
     } catch (error) {
-        console.error('Erro ao cadastrar o Usuário:', error);
-        res.status(500).send('Erro ao cadastrar o Usuário');
+        console.error('Erro ao cadastrar o Usuário:', error.response ? error.response.data : error.message);
+        return res.status(500).json({ error: 'Erro ao cadastrar o Usuário' });
     }
 };
 
@@ -47,7 +66,7 @@ const deleteUser = async (req, res) => {
     const userId = req.params.id;
     try {
         // Faz a requisição DELETE para a API que lida com a exclusão do usuário
-        const response = await axios.delete(`http://localhost:3001/users/${userId}`);
+        const response = await axios.delete(`http://127.0.0.1:3002/users/${userId}`);
 
         // Verifica se a API retornou uma resposta de sucesso
         if (response.status === 200) {
@@ -65,11 +84,11 @@ const showEditUserForm = async (req, res) => {
     const userId = req.params.id;
     try {
         // Consumir a API para obter os detalhes do usuário
-        const userResponse = await axios.get(`http://localhost:3001/users/details/${userId}`);
+        const userResponse = await axios.get(`http://127.0.0.1:3002/users/details/${userId}`);
         const user = userResponse.data; // Dados do usuário
 
         // Consultar as roles disponíveis
-        let rolesResponse = await axios.get(`http://localhost:3001/roles`);
+        let rolesResponse = await axios.get(`http://127.0.0.1:3002/roles`);
         let roles = rolesResponse.data;
 
         // Retornar os dados renderizados
@@ -95,11 +114,11 @@ const updateUser = async (req, res) => {
     if (username) dataToUpdate.username = username;
     if (password) dataToUpdate.password = password;
     if (name) dataToUpdate.name = name;
-    if (role) dataToUpdate.roles_id = role; // Supondo que "role" seja o ID da role
+    if (role) dataToUpdate.roles_id = parseInt(role); // Supondo que "role" seja o ID da role
 
     try {
         // Fazendo a requisição PATCH para a API
-        const response = await axios.patch(`http://localhost:3001/users/${userId}`, dataToUpdate, {
+        const response = await axios.patch(`http://127.0.0.1:3002/users/${userId}`, dataToUpdate, {
             headers: {
                 'Content-Type': 'application/json', // Garantindo que o Content-Type seja JSON
             },

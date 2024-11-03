@@ -146,8 +146,8 @@ app.get('/', async (req, res) => {
 
     const user = req.user; // Obter o usuário autenticado, se estiver disponível
 
-    const response = await axios.get(`http://localhost:3001/products/home`);
-    products = response.data.data;
+    const response = await axios.get(`http://127.0.0.1:3002/products/home`);
+    products = response.data;
     
     // Renderiza o arquivo login.ejs
     res.render('site/home', { pageTitle: 'Home', message: req.flash('error'), products, user });
@@ -270,6 +270,7 @@ app.get('/vendors', isAuthenticated, VendorsController.getAllVendors);
 app.delete('/vendors/:id', VendorsController.deleteVendor);
 app.get('/vendors/:id/edit', isAuthenticated, VendorsController.showEditVendorForm);
 app.post('/vendors/:id', isAuthenticated, VendorsController.updateVendor);
+app.get('/vendors/new', isAuthenticated, VendorsController.showNewVendorForm);
 
 
 // VENDORS
@@ -309,10 +310,6 @@ app.get('/carrinho', CartController.getCart);
 app.post('/carrinho/increment', CartController.incrementCartItem);
 app.post('/carrinho/decrement', CartController.decrementCartItem);
 // CARRINHO
-
-app.get('/gmail', (req, res) => {
-    res.send('ZqfpCraGDzuJ64Mg2meKYW');
-});
 
 app.listen(PORT, () => {
     console.log(`O servidor está em execução http://localhost:${PORT}`);

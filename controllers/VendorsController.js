@@ -47,9 +47,14 @@ const updateVendor = async (req, res) => {
     }
 };
 
+const showNewVendorForm = async (req, res) => {
+    res.render('vendors/new', { pageTitle: 'Inserir Produtor' , username: req.user.username, userRole: req.user.roles_id });
+};
+
 module.exports = {
     getAllVendors,
     deleteVendor,
     showEditVendorForm,
-    updateVendor
+    updateVendor,
+    showNewVendorForm
 };

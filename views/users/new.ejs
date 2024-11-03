@@ -36,13 +36,6 @@
                             </div>
                         </div>
 
-                        <div class="col-md-4">
-                            <div class="form-group mb-3">
-                                <label for="name" class="form-label">CPF</label>
-                                <input type="text" class="form-control" id="cpf" name="cpf" required>
-                                <div class="invalid-feedback" id="nameError"></div>
-                            </div>
-                        </div>
 
                         <div class="col-md-4">
                             <div class="form-group mb-3">
@@ -52,10 +45,18 @@
                             </div>
                         </div>
 
+
                     </div>
                     <div class="row mb-3">
 
-                        <div class="col-md-4">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="name" class="form-label">CPF</label>
+                                <input type="text" class="form-control" id="cpf" name="cpf" required>
+                                <div class="invalid-feedback" id="nameError"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="description" class="form-label">Role</label>
                                 <select name="role" id="role" class="form-control">
@@ -66,14 +67,18 @@
                                 <div class="invalid-feedback" id="roleError"></div>
                             </div>
                         </div>
-                        <div class="col-md-8">
+
+
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
                             <div class="form-group mb-3">
                                 <label for="name" class="form-label">Senha</label>
                                 <input type="text" class="form-control" id="password" name="password" required>
                                 <div class="invalid-feedback" id="passwordError"></div>
                             </div>
                         </div>
-
                     </div>
                     <button type="submit" class="btn btn-primary">Salvar</button>
                 </form>
