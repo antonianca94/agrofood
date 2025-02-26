@@ -49,7 +49,7 @@ const registerUser = async (req, res) => {
 
 
 const showRegisterUser = async (req, res) => {
-    res.render('register', { message: req.flash('error') });
+    res.render('register', { message: req.flash('error'), pageTitle: 'Cadastro do Produtor', } );
 };
 
 // Exportando as funções do controller para serem usadas em outros lugares

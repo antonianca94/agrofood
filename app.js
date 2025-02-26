@@ -223,7 +223,7 @@ async function executeQuery(sql, values = []) {
     const connection = await mysql.createConnection({
         host: 'localhost',
         user: 'root',
-        password: '',
+        password: '8499',
         database: 'agrofood'
     });
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Usuário</title>
+    <title><%= pageTitle %></title>
     <script src="/public/js/register/send.js"></script>
 
         
@@ -78,6 +78,16 @@
     </style>
 </head>
 <body>
+
+    <!-- VOLTAR -->
+    <div class="d-flex justify-content-start mb-4">
+        <div class="d-flex align-items-center justify-content-center">
+            <i class="bi bi-arrow-left pl-2 pr-1" style="font-size: 1.5rem; color: gray;"></i>
+            <h3 class="text-left m-0" style="font-size: 1.2rem; color: gray;">voltar</h3>
+        </div>
+    </div>
+    <!-- VOLTAR -->
+
     <div class="d-flex justify-content-start mb-4">
         <div class="d-flex align-items-center justify-content-center">
             <i class="bi bi-person-bounding-box icone-cadastro-produtor pl-2 pr-2"></i> 
@@ -93,6 +103,7 @@
     <% } %>
     <div class="register-container">
         <div class="d-flex justify-content-start mb-4">
+            
             <div class="d-flex align-items-center justify-content-center">
                 <i class="bi bi-person icone-cadastro-produtor pr-2"></i> 
             </div>
@@ -257,5 +268,8 @@
                 .catch(error => console.error('Erro ao consultar CEP:', error));
         }
     </script>
+
+<%- include('footer') %>
+
 </body>
 </html>
