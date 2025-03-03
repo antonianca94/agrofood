@@ -1,5 +1,4 @@
 
-const { executeQuery } = require('../db');
 const axios = require('axios');
 
 // Função para obter todas as funções
@@ -28,11 +27,15 @@ const createRole = async (req, res) => {
         return res.status(401).send('Usuário não autenticado');
     }
     try {
-        await executeQuery('INSERT INTO roles (name, description) VALUES (?, ?)', [name, description]);
+        const response = await axios.post('http://127.0.0.1:3002/roles', {
+            name,
+            description
+        });
+
         req.flash('success', 'Role cadastrada com sucesso!');
         res.redirect('/roles');
     } catch (error) {
-        console.error('Erro ao cadastrar a role:', error);
+        console.error('Erro ao cadastrar a Role:', error.response ? error.response.data : error.message);
         res.status(500).send('Erro ao cadastrar a role');
     }
 };
@@ -40,8 +43,14 @@ const createRole = async (req, res) => {
 const deleteRole = async (req, res) => {
     const roleId = req.params.id;
     try {
-        await executeQuery('DELETE FROM roles WHERE id = ?', [roleId]);
-        res.status(200).json({ message: 'Role excluída com sucesso!' });
+        const response = await axios.delete(`http://127.0.0.1:3002/roles/${roleId}`);
+        // Verifica se a API retornou uma resposta de sucesso
+        if (response.status === 200) {
+            res.status(200).json({ message: 'Role excluída com sucesso!' });
+        } else {
+            res.status(response.status).json({ message: response.data.message });
+        }
+
     } catch (error) {
         console.error('Erro ao excluir a role:', error);
         res.status(500).json({ error: 'Erro ao excluir a role' });
@@ -51,24 +60,38 @@ const deleteRole = async (req, res) => {
 const showEditRoleForm = async (req, res) => {
     const roleId = req.params.id;
     try {
-        const [role] = await executeQuery('SELECT * FROM roles WHERE id = ?', [roleId]);
+        const roleResponse = await axios.get(`http://127.0.0.1:3002/roles/${roleId}`);
+        const role = roleResponse.data; 
+        //console.log(role);
         res.render('roles/edit', { pageTitle: 'Editar Role', role, errors: '', username: req.user.username, userRole: req.user.roles_id });
     } catch (error) {
         res.status(500).send('Erro ao buscar role para edição');
+        console.error('Erro ao buscar role para edição:', error);
     }
 };
 
 const updateRole = async (req, res) => {
     const roleId = req.params.id;
-    const [role] = await executeQuery('SELECT * FROM roles WHERE id = ?', [roleId]);
     const { name, description } = req.body;
-
+    const dataToUpdate = {};
+    if (name) dataToUpdate.name = name;
+    if (description) dataToUpdate.description = description;
     try {
-        await executeQuery('UPDATE roles SET name = ?, description = ? WHERE id = ?', [name, description, roleId]);
-        req.flash('success', 'Role atualizada com sucesso!');
-        res.redirect('/roles');
+        const response = await axios.patch(`http://127.0.0.1:3002/roles/${roleId}`, dataToUpdate, {
+            headers: {
+                'Content-Type': 'application/json', // Garantindo que o Content-Type seja JSON
+            },
+        });
+
+        if (response.status === 200) {
+            req.flash('success', 'Role atualizada com sucesso!');
+            res.redirect('/roles');
+        } else {
+            res.status(response.status).send(response.data.message || 'Erro ao atualizar a role');
+        }
     } catch (error) {
-        res.status(500).send('Erro ao atualizar a role');
+        console.error(error);
+        res.status(500).send('Erro ao atualizar a role: ' + error.message);
     }
 };
 
