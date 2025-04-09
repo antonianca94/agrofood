@@ -1,4 +1,3 @@
-const { executeQuery } = require('../db');
 const axios = require('axios');
 
 // Função para obter todos os usuários
@@ -55,6 +54,7 @@ const createUser = async (req, res) => {
 
         // Retorna a resposta da API
         req.flash('success', 'Usuário cadastrado com sucesso!');
+        console.log('Usuário cadastrado com sucesso!');
         res.redirect('/users');
     } catch (error) {
         console.error('Erro ao cadastrar o Usuário:', error.response ? error.response.data : error.message);
@@ -71,6 +71,7 @@ const deleteUser = async (req, res) => {
         // Verifica se a API retornou uma resposta de sucesso
         if (response.status === 200) {
             res.status(200).json({ message: 'Usuário excluído com sucesso!' });
+            console.log('Usuário excluído com sucesso!');
         } else {
             res.status(response.status).json({ message: response.data.message });
         }
@@ -126,6 +127,7 @@ const updateUser = async (req, res) => {
 
         if (response.status === 200) {
             req.flash('success', 'Usuário atualizado com sucesso!');
+            console.log('Usuário atualizado com sucesso!');
             res.redirect('/users');
         } else {
             res.status(response.status).send(response.data.message || 'Erro ao atualizar o usuário');
