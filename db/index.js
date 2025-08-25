@@ -5,7 +5,7 @@ async function executeQuery(sql, values = []) {
     const connection = await mysql.createConnection({
         host: 'localhost',
         user: 'root',
-        password: '8499',
+        password: '84990999',
         database: 'agrofood'
     });
 

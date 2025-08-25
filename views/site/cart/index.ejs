@@ -30,14 +30,14 @@
                         <div class="card-body">
                             <div class="d-flex align-items-start border-bottom pb-3">
                                 <div class="ms-3 me-4"> 
-                                    <a href="/produto/<%= item.Sku %>">
-                                        <img style="object-fit: cover;" src="<%= item.imagePath %>" width="100px" height="100px" class="avatar-lg rounded">
+                                    <a href="/produto/<%= item.productSku %>">
+                                        <img style="object-fit: cover;" src="<%= item.productImage %>" width="100px" height="100px" class="avatar-lg rounded">
                                     </a>
                                 </div>
                                 <div class="flex-grow-1 align-self-start overflow-hidden">
                                     <div>
                                         <h5 class="text-truncate font-size-18">
-                                            <a href="/produto/<%= item.Sku %>" class="" style="font-size: 1rem; text-decoration: none;"><%= item.productName %></a>
+                                            <a href="/produto/<%= item.productSku %>" class="" style="font-size: 1rem; text-decoration: none;"><%= item.productName %></a>
                                         </h5>
                                     </div>
                                 </div>
