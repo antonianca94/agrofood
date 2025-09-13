@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const axios = require('axios');
+require('dotenv').config();
 
 const RoleController = require('./controllers/RoleController');
 const userController = require('./controllers/UserController'); 

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3002'; // URL da sua API Go
+const API_BASE_URL = process.env.API_URL; // URL da sua API Go
 
 // Adicionar um item ao carrinho
 const addToCart = async (req, res) => {

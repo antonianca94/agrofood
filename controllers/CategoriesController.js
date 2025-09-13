@@ -1,9 +1,16 @@
 const { executeQuery } = require('../db');
+const API_BASE_URL = process.env.API_URL; // URL da sua API Go
+const axios = require('axios');
+
 
 // Função para obter todas as categorias
 const getAllCategories = async (req, res) => {
     try {
-        const categories = await executeQuery('SELECT * FROM categories_products');
+
+        let categories;
+        const response = await axios.get(`${API_BASE_URL}/categories`);
+        categories = response.data;
+
         const successMessage = req.flash('success'); 
         res.render('categories/index', { pageTitle: 'Categorias', categories, successMessage, username: req.user.username, userRole: req.user.roles_id });
     } catch (error) {
@@ -13,7 +20,11 @@ const getAllCategories = async (req, res) => {
 
 // Função para exibir o formulário de inserção de nova categoria
 const showNewCategoryForm = async (req, res) => {
-    const categories = await executeQuery('SELECT * FROM categories_products');
+    
+    let categories;
+    const response = await axios.get(`${API_BASE_URL}/categories`);
+    categories = response.data;
+
     res.render('categories/new', { pageTitle: 'Inserir Categoria' , categories, username: req.user.username, userRole: req.user.roles_id });
 };
 
