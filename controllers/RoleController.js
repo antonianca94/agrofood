@@ -1,11 +1,12 @@
 
+const API_BASE_URL = process.env.API_URL; // URL da sua API Go
 const axios = require('axios');
 
 // Função para obter todas as funções
 const getAllRoles = async (req, res) => {
     try {
         let roles;
-        const response = await axios.get(`http://127.0.0.1:3002/roles`);
+        const response = await axios.get(`${API_BASE_URL}/roles`);
         roles = response.data;
         const successMessage = req.flash('success'); 
         res.render('roles/index', { pageTitle: 'Roles', roles, successMessage, username: req.user.username, userRole: req.user.roles_id });
@@ -43,7 +44,7 @@ const createRole = async (req, res) => {
 const deleteRole = async (req, res) => {
     const roleId = req.params.id;
     try {
-        const response = await axios.delete(`http://127.0.0.1:3002/roles/${roleId}`);
+        const response = await axios.delete(`${API_BASE_URL}/roles/${roleId}`);
         // Verifica se a API retornou uma resposta de sucesso
         if (response.status === 200) {
             res.status(200).json({ message: 'Role excluída com sucesso!' });
@@ -60,7 +61,7 @@ const deleteRole = async (req, res) => {
 const showEditRoleForm = async (req, res) => {
     const roleId = req.params.id;
     try {
-        const roleResponse = await axios.get(`http://127.0.0.1:3002/roles/${roleId}`);
+        const roleResponse = await axios.get(`${API_BASE_URL}/roles/${roleId}`);
         const role = roleResponse.data; 
         //console.log(role);
         res.render('roles/edit', { pageTitle: 'Editar Role', role, errors: '', username: req.user.username, userRole: req.user.roles_id });
@@ -77,7 +78,7 @@ const updateRole = async (req, res) => {
     if (name) dataToUpdate.name = name;
     if (description) dataToUpdate.description = description;
     try {
-        const response = await axios.patch(`http://127.0.0.1:3002/roles/${roleId}`, dataToUpdate, {
+        const response = await axios.patch(`${API_BASE_URL}/roles/${roleId}`, dataToUpdate, {
             headers: {
                 'Content-Type': 'application/json', // Garantindo que o Content-Type seja JSON
             },

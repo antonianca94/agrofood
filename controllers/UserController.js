@@ -1,10 +1,11 @@
+const API_BASE_URL = process.env.API_URL; 
 const axios = require('axios');
 
 // Função para obter todos os usuários
 const getAllUsers = async (req, res) => {
     try {
         let users;
-        const response = await axios.get(`http://127.0.0.1:3002/users`);
+        const response = await axios.get(`${API_BASE_URL}/users`);
         
         users = response.data;
 
@@ -18,7 +19,7 @@ const getAllUsers = async (req, res) => {
 
 // Função para exibir o formulário de criação de novo usuário
 const showNewUserForm = async (req, res) => {
-    let response = await axios.get(`http://127.0.0.1:3002/roles`);
+    let response = await axios.get(`${API_BASE_URL}/roles`);
     let roles = response.data;
     res.render('users/new', { pageTitle: 'Inserir Usuário' , roles, username: req.user.username, userRole: req.user.roles_id });
 };
@@ -66,7 +67,7 @@ const deleteUser = async (req, res) => {
     const userId = req.params.id;
     try {
         // Faz a requisição DELETE para a API que lida com a exclusão do usuário
-        const response = await axios.delete(`http://127.0.0.1:3002/users/${userId}`);
+        const response = await axios.delete(`${API_BASE_URL}/users/${userId}`);
 
         // Verifica se a API retornou uma resposta de sucesso
         if (response.status === 200) {
@@ -85,11 +86,11 @@ const showEditUserForm = async (req, res) => {
     const userId = req.params.id;
     try {
         // Consumir a API para obter os detalhes do usuário
-        const userResponse = await axios.get(`http://127.0.0.1:3002/users/details/${userId}`);
+        const userResponse = await axios.get(`${API_BASE_URL}/users/details/${userId}`);
         const user = userResponse.data; // Dados do usuário
 
         // Consultar as roles disponíveis
-        let rolesResponse = await axios.get(`http://127.0.0.1:3002/roles`);
+        let rolesResponse = await axios.get(`${API_BASE_URL}/roles`);
         let roles = rolesResponse.data;
 
         // Retornar os dados renderizados
@@ -119,7 +120,7 @@ const updateUser = async (req, res) => {
 
     try {
         // Fazendo a requisição PATCH para a API
-        const response = await axios.patch(`http://127.0.0.1:3002/users/${userId}`, dataToUpdate, {
+        const response = await axios.patch(`${API_BASE_URL}/users/${userId}`, dataToUpdate, {
             headers: {
                 'Content-Type': 'application/json', // Garantindo que o Content-Type seja JSON
             },

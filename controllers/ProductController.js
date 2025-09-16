@@ -4,6 +4,9 @@ const path = require('path');
 const sharp = require('sharp');
 const fs_promisses = require('fs').promises; // Importar o módulo fs com Promises
 const fs = require('fs'); // Importar o módulo fs com Promises
+
+const API_BASE_URL = process.env.API_URL; // URL da sua API Go
+
 const axios = require('axios');
 
 const getAllProducts = async (req, res) => {
@@ -13,10 +16,10 @@ const getAllProducts = async (req, res) => {
         const roleId = req.user.roles_id; // Obtém o roles_id do usuário autenticado
 
         if (roleId === 1) { // Se o usuário for um administrador
-            const response = await axios.get(`http://127.0.0.1:3002/products`);
+            const response = await axios.get(`${API_BASE_URL}/products`);
             products = response.data;
         } else {
-            const response = await axios.get(`http://127.0.0.1:3002/products/user_id/${userId}`);
+            const response = await axios.get(`${API_BASE_URL}/products/user_id/${userId}`);
             products = response.data;
         }
 
@@ -309,7 +312,7 @@ const getProductBySKU = async (req, res) => {
 
     try {
         // Consulta para obter as informações do produto pelo SKU
-        const productResponse = await axios.get(`http://127.0.0.1:3002/products/${sku}`);
+        const productResponse = await axios.get(`${API_BASE_URL}/products/${sku}`);
         const product = productResponse.data;
 
         // Verificar se o produto foi encontrado
@@ -318,7 +321,7 @@ const getProductBySKU = async (req, res) => {
         }
 
         // Consulta para obter todas as imagens relacionadas ao produto
-        const imagesResponse = await axios.get(`http://127.0.0.1:3002/images/${product.id}`);
+        const imagesResponse = await axios.get(`${API_BASE_URL}/images/${product.id}`);
         const images = imagesResponse.data;
 
         const vendor = await executeQuery('SELECT * FROM vendors WHERE users_id = ?', [product.users_id]);
