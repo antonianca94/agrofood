@@ -28,7 +28,7 @@ const createRole = async (req, res) => {
         return res.status(401).send('Usuário não autenticado');
     }
     try {
-        const response = await axios.post('http://127.0.0.1:3002/roles', {
+        const response = await axios.post(`${API_BASE_URL}/roles`, {
             name,
             description
         });

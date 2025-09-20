@@ -1,0 +1,30 @@
+# Dependências
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Variáveis de ambiente
+.env
+
+# Build / cache (caso venha a usar)
+dist/
+build/
+.cache/
+.tmp/
+
+# Uploads e arquivos gerados pelo usuário
+#uploads/
+
+# Sistema / IDE
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Arquivos de cobertura de testes
+coverage/
