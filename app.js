@@ -272,6 +272,8 @@ app.delete('/vendors/:id', VendorsController.deleteVendor);
 app.get('/vendors/:id/edit', isAuthenticated, VendorsController.showEditVendorForm);
 app.post('/vendors/:id', isAuthenticated, VendorsController.updateVendor);
 app.get('/vendors/new', isAuthenticated, VendorsController.showNewVendorForm);
+app.post('/vendors', isAuthenticated, VendorsController.createVendor);
+
 
 
 // VENDORS
