@@ -43,7 +43,7 @@ const createUser = async (req, res) => {
 
     try {
         // Faz a requisição POST para a API para criar o usuário
-        const response = await axios.post('http://127.0.0.1:3002/users', {
+        const response = await axios.post(`${API_BASE_URL}/users`, {
             name,
             surname,
             cpf,
@@ -52,6 +52,7 @@ const createUser = async (req, res) => {
             roles_id: role_id,
             status
         });
+        
 
         // Retorna a resposta da API
         req.flash('success', 'Usuário cadastrado com sucesso!');
