@@ -50,9 +50,19 @@ const createProduct = async (req, res) => {
             return res.status(400).send('Nenhum arquivo foi enviado.');
         }
 
-        // Extrair os dados do produto do corpo da requisição
-        const { code, name, price, categorias, quantity } = req.body;
+        // ID USUÁRIO
         const userId = req.session.passport.user;
+        
+        // DADOS DO PRODUTO
+        const { code, name, price, categorias, quantity } = req.body;
+        const ProductData = {};
+        if (code) ProductData.sku = code;
+        if (name) ProductData.name = name;
+        if (price) ProductData.price = price;
+        if (userId) ProductData.users_id = parseInt(userId); 
+        if (quantity) ProductData.quantity = quantity; 
+        if (categorias) ProductData.categories_product_id = parseInt(categorias); 
+        // DADOS DO PRODUTO
 
         // Verificar se o usuário está autenticado
         if (!userId) {
@@ -60,8 +70,10 @@ const createProduct = async (req, res) => {
         }
 
         let result;
+        let result_image;
         try {
-            result = await executeQuery('INSERT INTO products (sku, name, price, users_id, quantity, categories_products_id) VALUES (?, ?, ?, ?, ?, ?)', [code, name, price, userId, quantity, categorias]);
+
+            result = await axios.post(`${API_BASE_URL}/products`, ProductData);
 
             // Obter o host e a porta do servidor Express
             const serverHost = req.get('host');
@@ -79,7 +91,14 @@ const createProduct = async (req, res) => {
 
                 // Inserir o caminho da imagem convertida na tabela de imagens
                 const imagePath = `${serverPath}/uploads/${filename}`;
-                await executeQuery('INSERT INTO images (name, path, type, products_id) VALUES (?, ?, ?, ?)', [filename, imagePath, file.fieldname, result.insertId]);
+                const imageData = {};
+                if (filename) imageData.name = filename;
+                if (imagePath) imageData.path = imagePath; 
+                if (file.fieldname) imageData.type = file.fieldname; 
+                if (result.data.product.id) imageData.products_id = result.data.product.id;
+
+                result_image = await axios.post(`${API_BASE_URL}/images`, imageData);
+                
             }));
 
         } catch (error) {

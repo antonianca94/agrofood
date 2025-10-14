@@ -1,4 +1,3 @@
-const { executeQuery } = require('../db');
 const API_BASE_URL = process.env.API_URL; // URL da sua API Go
 const axios = require('axios');
 
