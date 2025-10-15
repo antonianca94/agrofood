@@ -59,9 +59,7 @@
                         <% } %>
                     </form>
                     <div class="mt-3">
-                        <% vendor.forEach(v => { %>
-                        <p><strong>Produtor: </strong> <span class="c-orange"><%= v.name %></span></p>
-                        <% }); %>
+                        <p><strong>Produtor: </strong> <span class="c-orange"><%= vendor.name %></span></p>
                     </div>
                 </div>
                 
@@ -83,12 +81,10 @@
                     Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
                 </div>
                 <div class="tab-pane fade m-3 mt-4 pt-2" id="productor" role="tabpanel" aria-labelledby="productor-tab">
-                    <% vendor.forEach(v => { %>
-                        <p><strong>CNPJ: </strong><span class="c-grey"><%= v.cnpj %></span></p>
-                        <p><strong>Nome: </strong><span class="c-grey"><%= v.name %></span></p>
-                        <p><strong>Cidade: </strong><span class="c-grey"><%= v.city %></span></p>
-                        <p><strong>Estado: </strong><span class="c-grey"><%= v.state %></span></p>
-                    <% }); %>
+                        <p><strong>CNPJ: </strong><span class="c-grey"><%= vendor.cnpj %></span></p>
+                        <p><strong>Nome: </strong><span class="c-grey"><%= vendor.name %></span></p>
+                        <p><strong>Cidade: </strong><span class="c-grey"><%= vendor.city %></span></p>
+                        <p><strong>Estado: </strong><span class="c-grey"><%= vendor.state %></span></p>
                 </div>
               </div>
         </div>

@@ -19,7 +19,7 @@ const getAllProducts = async (req, res) => {
             const response = await axios.get(`${API_BASE_URL}/products`);
             products = response.data;
         } else {
-            const response = await axios.get(`${API_BASE_URL}/products/user_id/${userId}`);
+            const response = await axios.get(`${API_BASE_URL}/products/user/${userId}`);
             products = response.data;
         }
 
@@ -343,7 +343,10 @@ const getProductBySKU = async (req, res) => {
         const imagesResponse = await axios.get(`${API_BASE_URL}/images/${product.id}`);
         const images = imagesResponse.data;
 
-        const vendor = await executeQuery('SELECT * FROM vendors WHERE users_id = ?', [product.users_id]);
+        //const vendor = await executeQuery('SELECT * FROM vendors WHERE users_id = ?', [product.users_id]);
+
+        const vendorResponse = await axios.get(`${API_BASE_URL}/vendors/user/${product.users_id}`);
+        const vendor = vendorResponse.data;
 
         res.render('site/product/index', { 
             pageTitle: 'Produto', 
