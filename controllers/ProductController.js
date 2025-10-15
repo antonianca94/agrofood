@@ -32,7 +32,6 @@ const getAllProducts = async (req, res) => {
     }
 };
 
-
 function generateRandomCode(length) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -116,13 +115,15 @@ const createProduct = async (req, res) => {
 
 const showNewProductForm = async (req, res) => {
     try {
-        // Consulta SQL para obter todas as categorias principais (id_categories_products = 0)
-        const parentCategoriesQuery = `SELECT * FROM categories_products WHERE id_categories_products = 0;`;
-        const parentCategories = await executeQuery(parentCategoriesQuery);
 
         // Consulta SQL para obter todas as categorias
-        const categoriesQuery = `SELECT * FROM categories_products;`;
-        const categories = await executeQuery(categoriesQuery);
+        const categoriesQuery = await axios.get(`${API_BASE_URL}/categories`);
+        const categories = categoriesQuery.data;
+
+         // Pega as categorias principais (sem pai)
+        const parentCategories = categories.filter(cat => 
+            cat.id_categories_products === 0 || cat.id_categories_products === null
+        );
 
         // Construindo a estrutura de árvore de categorias
         const buildCategoryTree = (parentCategories, categories) => {
@@ -324,7 +325,6 @@ const updateProduct = async (req, res) => {
     }
 };
 
-
 const getProductBySKU = async (req, res) => {
     const sku = req.params.sku; // Obter o SKU da URL
     const user = req.user; // Obter o usuário autenticado, se estiver disponível
@@ -343,8 +343,7 @@ const getProductBySKU = async (req, res) => {
         const imagesResponse = await axios.get(`${API_BASE_URL}/images/${product.id}`);
         const images = imagesResponse.data;
 
-        //const vendor = await executeQuery('SELECT * FROM vendors WHERE users_id = ?', [product.users_id]);
-
+        // PEGAR O VENDOR PELA API (USERS_ID)
         const vendorResponse = await axios.get(`${API_BASE_URL}/vendors/user/${product.users_id}`);
         const vendor = vendorResponse.data;
 
