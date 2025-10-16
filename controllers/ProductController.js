@@ -155,17 +155,20 @@ const deleteProduct = async (req, res) => {
     const productId = req.params.id;
     try {
         // Obter todas as imagens associadas ao produto
-        const images = await executeQuery('SELECT * FROM images WHERE products_id = ?', [productId]);
+        const imagesResponse = await axios.get(`${API_BASE_URL}/images/${productId}`);
+        const images = imagesResponse.data;
 
         // Excluir cada imagem associada ao produto
         for (const image of images) {
-            await executeQuery('DELETE FROM images WHERE id = ?', [image.id]);
+    
+            const response = await axios.delete(`${API_BASE_URL}/images/${image.id}`);
+
             // Remova os arquivos de imagem do sistema de arquivos, se necessário
             const filePath = path.join(__dirname, '..', 'uploads', image.name);
             try {
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
-                    console.log(`${image.name} excluído com sucesso.`);
+                    //console.log(`${image.name} excluída com sucesso.`);
                 } else {
                     console.error(`${image.name} não encontrado.`);
                 }
@@ -175,8 +178,8 @@ const deleteProduct = async (req, res) => {
         }
 
         // Excluir o produto
-        await executeQuery('DELETE FROM products WHERE id = ?', [productId]);
-        
+        const delete_product = await axios.delete(`${API_BASE_URL}/products/id/${productId}`);
+
         res.status(200).json({ message: 'Produto excluído com sucesso!' });
     } catch (error) {
         console.error('Erro ao excluir produto:', error);
@@ -248,39 +251,6 @@ const showEditProductForm = async (req, res) => {
         res.status(500).send('Erro ao buscar produto para edição');
     }
 };
-
-const deleteImage = async (req, res) => {
-    const filename = req.params.filename;
-    try {
-        // Buscar a imagem no banco de dados
-        const [image] = await executeQuery('SELECT * FROM images WHERE name = ?', [filename]);
-
-        // Verificar se a imagem existe
-        if (!image) {
-            return res.status(404).json({ error: 'Imagem não encontrada' });
-        }
-
-        // Excluir a imagem do banco de dados
-        await executeQuery('DELETE FROM images WHERE name = ?', [filename]);
-
-        // Remover o arquivo de imagem do sistema de arquivos
-        const imagePath = path.join(__dirname, '..', 'uploads', image.name);
-        try {
-            fs.unlinkSync(imagePath);
-            console.log(`Imagem ${filename} excluída com sucesso`);
-        } catch (error) {
-            console.error('Erro ao excluir imagem:', error);
-            return res.status(500).json({ error: 'Erro ao excluir imagem' });
-        }
-
-        // Enviar uma resposta de sucesso ao cliente
-        res.status(200).json({ message: 'Imagem excluída com sucesso' });
-    } catch (error) {
-        console.error('Erro ao excluir imagem:', error);
-        res.status(500).json({ error: 'Erro ao excluir imagem' });
-    }
-};
-
 
 const updateProduct = async (req, res) => {
     const productId = req.params.id;
@@ -369,7 +339,6 @@ module.exports = {
     showNewProductForm,
     deleteProduct,
     showEditProductForm,
-    deleteImage,
     updateProduct,
     getProductBySKU 
 };
