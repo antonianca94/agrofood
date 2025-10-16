@@ -188,17 +188,17 @@ const showEditProductForm = async (req, res) => {
     const productId = req.params.id;
     try {
         // Obtenha o produto com base no ID
-        const [product] = await executeQuery('SELECT * FROM products WHERE id = ?', [productId]);
+        const productResponse = await axios.get(`${API_BASE_URL}/products/id/${productId}`);
+        const product = productResponse.data; 
 
-        // Obtenha todas as categorias
-        const categories = await executeQuery('SELECT * FROM categories_products');
-
-        // Construa a árvore de categorias
-        const parentCategoriesQuery = `SELECT * FROM categories_products WHERE id_categories_products = 0;`;
-        const parentCategories = await executeQuery(parentCategoriesQuery);
-
-        const categoriesQuery = `SELECT * FROM categories_products;`;
-        const allCategories = await executeQuery(categoriesQuery);
+        // Consulta SQL para obter todas as categorias
+        const categoriesQuery = await axios.get(`${API_BASE_URL}/categories`);
+        const categories = categoriesQuery.data;
+        const allCategories = categoriesQuery.data;
+         // Pega as categorias principais (sem pai)
+        const parentCategories = categories.filter(cat => 
+            cat.id_categories_products === 0 || cat.id_categories_products === null
+        );
 
         const buildCategoryTree = (parentCategories, categories) => {
             return parentCategories.map(parent => {
@@ -213,15 +213,15 @@ const showEditProductForm = async (req, res) => {
 
         const categoryTree = buildCategoryTree(parentCategories, allCategories);
 
-        // Consulta para obter a imagem destacada (featured_image) do produto
-        const featuredImageQuery = 'SELECT * FROM images WHERE products_id = ? AND type = "featured_image"';
-        const [featuredImage] = await executeQuery(featuredImageQuery, [productId]);
-
+        // Consulta para obter a imagem destacada (featured_image) do produto      
+        const featuredImageQuery = await axios.get(`${API_BASE_URL}/images/${productId}/type?type=featured_image`);
+        const featuredImage = featuredImageQuery.data;
+    
         // Consulta para obter as imagens da galeria (gallery_images) do produto
-        const galleryImagesQuery = 'SELECT * FROM images WHERE products_id = ? AND type = "gallery_images[]"';
-        const galleryImages = await executeQuery(galleryImagesQuery, [productId]);
-        const galleryImagePaths = galleryImages.map(image => image.path);
+        const galleryImagesQuery = await axios.get(`${API_BASE_URL}/images/${productId}/type?type=gallery_images[]`);
+        const galleryImages = galleryImagesQuery.data;
 
+        const galleryImagePaths = galleryImages.map(image => image.path);
         const galleryImageConfig = galleryImages.map(image => {
             return {
                 caption: image.name,
@@ -244,6 +244,7 @@ const showEditProductForm = async (req, res) => {
             userRole: req.user.roles_id
         });
     } catch (error) {
+        console.error(error);
         res.status(500).send('Erro ao buscar produto para edição');
     }
 };
