@@ -23,9 +23,9 @@
                             <label for="categorias" class="form-label">Selecionar Categoria</label>
                             <select class="form-select" id="categorias" name="categorias">
                                 <% const renderCategories = (categories, parentPath = '') => { %>
-                                    <% categories.forEach(category => { %>
+                                    <% categories.forEach(category => { %>categories_product_id
                                         <!-- Renderiza a opção para a categoria atual -->
-                                        <option value="<%= category.id %>" <% if (product.categories_products_id === category.id) { %> selected <% } %>><%= parentPath + category.name %></option>
+                                        <option value="<%= category.id %>" <% if (product.categories_product_id === category.id) { %> selected <% } %>><%= parentPath + category.name %></option>
                                         <!-- Se a categoria tiver filhos, chama recursivamente a função para renderizá-los -->
                                         <% if (category.children && category.children.length) { %>
                                             <% renderCategories(category.children, parentPath + category.name + ' > '); %>

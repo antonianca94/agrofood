@@ -1,5 +1,3 @@
-const { executeQuery } = require('../db');
-
 const path = require('path');
 const sharp = require('sharp');
 const fs_promisses = require('fs').promises; // Importar o módulo fs com Promises
@@ -198,7 +196,8 @@ const showEditProductForm = async (req, res) => {
         const categoriesQuery = await axios.get(`${API_BASE_URL}/categories`);
         const categories = categoriesQuery.data;
         const allCategories = categoriesQuery.data;
-         // Pega as categorias principais (sem pai)
+        
+        // Pega as categorias principais (sem pai)
         const parentCategories = categories.filter(cat => 
             cat.id_categories_products === 0 || cat.id_categories_products === null
         );
@@ -256,18 +255,22 @@ const updateProduct = async (req, res) => {
     const productId = req.params.id;
     const { name, price, categorias, quantity } = req.body;
 
+    // Objeto com os dados que precisam ser atualizados
+    const dataToUpdate = {};
+    if (name) dataToUpdate.name = name;
+    if (price) dataToUpdate.price = price;
+    if (quantity) dataToUpdate.quantity = quantity;
+    if (categorias) dataToUpdate.categories_product_id = parseInt(categorias);
+
+    let result;
+    let result_image;
     try {
-        // Atualiza o nome e o preço do produto
-        await executeQuery('UPDATE products SET name = ?, price = ?, quantity = ? WHERE id = ?', [name, price, quantity, productId]);
-
-        // Verifica se a categoria selecionada é válida
-        const categoryExists = await executeQuery('SELECT id FROM categories_products WHERE id = ?', [categorias]);
-        if (categoryExists.length === 0) {
-            return res.status(400).send('Categoria inválida');
-        }
-
-        // Atualiza a categoria do produto
-        await executeQuery('UPDATE products SET categories_products_id = ? WHERE id = ?', [categorias, productId]);
+        // Fazendo a requisição PATCH para a API
+        result = await axios.patch(`${API_BASE_URL}/products/id/${productId}`, dataToUpdate, {
+            headers: {
+                'Content-Type': 'application/json', // Garantindo que o Content-Type seja JSON
+            },
+        });
 
         // Obter o host e a porta do servidor Express
         const serverHost = req.get('host');
@@ -283,9 +286,17 @@ const updateProduct = async (req, res) => {
             const filepath = path.join(__dirname, '..', 'uploads', filename);
             await fs.promises.writeFile(filepath, webpBuffer);
 
-            // Inserir o caminho da imagem convertida na tabela de imagens
-            const imagePath = `${serverPath}/uploads/${filename}`;
-            await executeQuery('INSERT INTO images (name, path, type, products_id) VALUES (?, ?, ?, ?)', [filename, imagePath, file.fieldname, productId]);
+                            // Inserir o caminho da imagem convertida na tabela de imagens
+                const imagePath = `${serverPath}/uploads/${filename}`;
+
+                const imageData = {};
+                if (filename) imageData.name = filename;
+                if (imagePath) imageData.path = imagePath; 
+                if (file.fieldname) imageData.type = file.fieldname; 
+                if (result.data.product.id) imageData.products_id = result.data.product.id;
+
+                result_image = await axios.post(`${API_BASE_URL}/images`, imageData);
+
         }));
 
         req.flash('success', 'Produto atualizado com sucesso!');
