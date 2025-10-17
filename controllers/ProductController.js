@@ -342,6 +342,38 @@ const getProductBySKU = async (req, res) => {
     }
 };
 
+const deleteImage = async (req, res) => {
+    const filename = req.params.filename;
+    try {
+        // Buscar a imagem no banco de dados
+
+        const imagesResponse = await axios.get(`${API_BASE_URL}/images/name/${filename}`);
+        const image = imagesResponse.data;
+        // Verificar se a imagem existe
+        if (!image) {
+            return res.status(404).json({ error: 'Imagem não encontrada' });
+        }
+
+        // Excluir a imagem do banco de dados
+        const response = await axios.delete(`${API_BASE_URL}/images/${image.id}`);
+
+        // Remover o arquivo de imagem do sistema de arquivos
+        const imagePath = path.join(__dirname, '..', 'uploads', image.name);
+        try {
+            fs.unlinkSync(imagePath);
+            console.log(`Imagem ${filename} excluída com sucesso`);
+        } catch (error) {
+            console.error('Erro ao excluir imagem:', error);
+            return res.status(500).json({ error: 'Erro ao excluir imagem' });
+        }
+
+        // Enviar uma resposta de sucesso ao cliente
+        res.status(200).json({ message: 'Imagem excluída com sucesso' });
+    } catch (error) {
+        console.error('Erro ao excluir imagem:', error);
+        res.status(500).json({ error: 'Erro ao excluir imagem' });
+    }
+};
 
 // Exportando as funções do controller para serem usadas em outros lugares
 module.exports = {
@@ -351,5 +383,6 @@ module.exports = {
     deleteProduct,
     showEditProductForm,
     updateProduct,
-    getProductBySKU 
+    getProductBySKU,
+    deleteImage
 };

@@ -289,6 +289,7 @@ app.get('/products/new', isAuthenticated, productController.showNewProductForm);
 app.delete('/products/:id', productController.deleteProduct);
 app.get('/products/:id/edit', productController.showEditProductForm);
 app.post('/products/:id', upload.any(), productController.updateProduct);
+app.post('/uploads/:filename', productController.deleteImage);
 // PRODUCTS
 
 // PRODUTO
