@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const axios = require('axios');
+
 require('dotenv').config();
 
 const RoleController = require('./controllers/RoleController');
@@ -14,6 +15,7 @@ const CartController = require('./controllers/CartController');
 const cacheController = require('express-cache-controller');
 
 const PORT = process.env.PORT || 3000;
+const API_BASE_URL = process.env.API_URL; 
 
 const mysql = require('mysql2/promise');
 const flash = require('express-flash');
@@ -85,7 +87,8 @@ passport.use(new LocalStrategy(
     async (username, password, done) => {
         try {
             // Busca o usuário no banco de dados pelo nome de usuário
-            const [user] = await executeQuery('SELECT * FROM users WHERE username = ?', [username]);
+            const userResponse = await axios.get(`${API_BASE_URL}/users/username/${username}`);
+            const user = userResponse.data; // Dados do usuário
 
             // Se o usuário não for encontrado ou a senha estiver incorreta, retorna uma mensagem de erro
             if (!user || user.password !== password) {
@@ -110,8 +113,8 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (id, done) => {
     try {
         // Busca o usuário no banco de dados pelo ID
-        const [user] = await executeQuery('SELECT * FROM users WHERE id = ?', [id]);
-        
+        const userResponse = await axios.get(`${API_BASE_URL}/users/${id}`);
+        const user = userResponse.data; // Dados do usuário
         // Se o usuário for encontrado, retorna o usuário
         done(null, user);
     } catch (error) {
@@ -147,7 +150,7 @@ app.get('/', async (req, res) => {
 
     const user = req.user; // Obter o usuário autenticado, se estiver disponível
 
-    const response = await axios.get(`http://127.0.0.1:3002/products/home`);
+    const response = await axios.get(`${API_BASE_URL}/products/home`);
     products = response.data;
     
     // Renderiza o arquivo login.ejs
@@ -220,26 +223,6 @@ const getRoutesForRole = (roleId) => {
     }
 };
 
-async function executeQuery(sql, values = []) {
-    const connection = await mysql.createConnection({
-        host: 'localhost',
-        user: 'root',
-        password: '84990999',
-        database: 'agrofood'
-    });
-
-    try {
-        const [result] = await connection.execute(sql, values);
-        // console.log(result);
-
-        return result; // Retorna o resultado da inserção ou outra operação
-    } catch (error) {
-        console.error('Erro ao executar consulta SQL:', error);
-        throw error;
-    } finally {
-        await connection.end();
-    }
-}
 
 // ROLES
 app.get('/roles', isAuthenticated, RoleController.getAllRoles);
