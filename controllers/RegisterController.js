@@ -3,7 +3,7 @@ const axios = require('axios');
 
 const VENDOR_ROLE_ID = 2;
 
-const registerUser = async (req, res) => {
+const registerVendor = async (req, res) => {
     const {
         name,
         surname,
@@ -27,7 +27,7 @@ const registerUser = async (req, res) => {
     try {
         // Validações básicas
         if (!password || !password2 || password !== password2) {
-            return res.render('register', {
+            return res.render('cadastro-produtor', {
                 errorMessage: 'As senhas não coincidem',
                 successMessage: '',
                 pageTitle: 'Cadastro do Produtor',
@@ -46,7 +46,7 @@ const registerUser = async (req, res) => {
             .map(([key]) => key);
 
         if (missingFields.length > 0) {
-            return res.render('register', {
+            return res.render('cadastro-produtor', {
                 errorMessage: 'Preencha todos os campos obrigatórios',
                 successMessage: '',
                 pageTitle: 'Cadastro do Produtor',
@@ -99,7 +99,7 @@ const registerUser = async (req, res) => {
             });
 
             if (vendorResponse.status === 200) {
-                return res.render('register', {
+                return res.render('cadastro-produtor', {
                     errorMessage: '',
                     successMessage: 'Cadastro efetuado com sucesso!',
                     pageTitle: 'Cadastro do Produtor',
@@ -121,7 +121,7 @@ const registerUser = async (req, res) => {
                            vendorError.response?.data?.message ||
                            'Erro ao criar a conta do produtor. Tente novamente.';
 
-            return res.render('register', {
+            return res.render('cadastro-produtor', {
                 errorMessage: errorMsg,
                 successMessage: '',
                 pageTitle: 'Cadastro do Produtor',
@@ -138,7 +138,7 @@ const registerUser = async (req, res) => {
                         'Erro ao cadastrar usuário. Tente novamente.';
         
         // Renderiza novamente mantendo os dados
-        return res.render('register', {
+        return res.render('cadastro-produtor', {
             errorMessage: errorMsg,
             successMessage: '',
             pageTitle: 'Cadastro do Produtor',
@@ -147,8 +147,8 @@ const registerUser = async (req, res) => {
     }
 };
 
-const showRegisterUser = async (req, res) => {
-    res.render('register', { 
+const showRegisterVendor = async (req, res) => {
+    res.render('cadastro-produtor', { 
         errorMessage: req.flash('error'),
         successMessage: req.flash('success'),
         pageTitle: 'Cadastro do Produtor',
@@ -157,6 +157,6 @@ const showRegisterUser = async (req, res) => {
 };
 
 module.exports = {
-    registerUser,
-    showRegisterUser
+    registerVendor,
+    showRegisterVendor
 };

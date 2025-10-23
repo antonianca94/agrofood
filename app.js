@@ -140,10 +140,10 @@ app.get('/login', (req, res) => {
 });
 // LOGIN USER
 
-// REGISTRO USER
-app.get('/register', RegisterController.showRegisterUser);
-app.post('/register', RegisterController.registerUser);
-// REGISTRO USER
+// REGISTRO PRODUTOR
+app.get('/cadastro-produtor', RegisterController.showRegisterVendor);
+app.post('/cadastro-produtor', RegisterController.registerVendor);
+// REGISTRO PRODUTOR
 
 // HOME
 app.get('/', async (req, res) => {
