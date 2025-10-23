@@ -158,6 +158,63 @@ app.get('/', async (req, res) => {
 });
 // HOME 
 
+// LISTAGEM PRODUTOS POR CATEGORIA
+app.get('/categoria/:id', productController.getProductsByCategory);
+app.get('/api/products/category/id/:id', async (req, res) => {
+    const categoryId = req.params.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+
+    try {
+        const response = await axios.get(
+            `${API_BASE_URL}/products/category/id/${categoryId}`,
+            { params: { page, limit } }
+        );
+
+        const { products, currentPage, totalCount, totalPages } = response.data;
+
+        // Buscar imagens para todos os produtos
+        const productsWithImages = await Promise.all(
+            products.map(async (product) => {
+                try {
+                    const imgResponse = await axios.get(
+                        `${API_BASE_URL}/images/${product.id}/type`,
+                        { 
+                            params: { type: 'featured_image' },
+                            timeout: 3000
+                        }
+                    );
+                    
+                    return {
+                        ...product,
+                        image_path: imgResponse.data?.length > 0 
+                            ? imgResponse.data[0].path 
+                            : '/public/img/no-image.png'
+                    };
+                } catch (error) {
+                    return {
+                        ...product,
+                        image_path: '/public/img/no-image.png'
+                    };
+                }
+            })
+        );
+
+        res.json({
+            products: productsWithImages,
+            currentPage,
+            totalCount,
+            totalPages
+        });
+    } catch (error) {
+        console.error('Erro ao buscar produtos:', error.message);
+        res.status(error.response?.status || 500).json({ 
+            error: 'Erro ao buscar produtos' 
+        });
+    }
+});
+// LISTAGEM PRODUTOS POR CATEGORIA
+
 // Middleware para verificar autenticação
 const isAuthenticated = (req, res, next) => {
     if (req.isAuthenticated()) {

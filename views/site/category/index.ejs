@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %></title>
+
+    <link href="/public/css/bootstrap.css" rel="stylesheet" />
+    <link href="/public/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" integrity="sha384-4LISF5TTJX/fLmGSxO53rV4miRxdg84mZsxmO8Rx5jGtp/LbrixFETvWa5a6sESd" crossorigin="anonymous">
+    <link href="/public/css/agrofood.css" rel="stylesheet" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+
+    <%- include('../header') %>
+
+    <div class="container mt-5 mb-5" x-data="productCategory('<%= category.id %>', <%= JSON.stringify(products) %>, <%= JSON.stringify(pagination) %>)">
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><%= category.name %></li>
+            </ol>
+        </nav>
+
+        <!-- Título da Categoria -->
+        <div class="row mb-4">
+            <div class="col">
+                <h2 class="c-orange"><%= category.name %></h2>
+                <p class="text-muted">
+                    <span x-show="!loading">Encontrados <span x-text="pagination.total"></span> produtos</span>
+                    <span x-show="loading">Carregando...</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div x-show="loading" class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+
+        <!-- Lista de Produtos -->
+        <div class="row" x-show="!loading" x-transition>
+            <template x-if="products.length > 0">
+                <div class="row">
+                    <template x-for="product in products" :key="product.id">
+                        <div class="col-md-3 col-sm-6 mb-4">
+                            <div class="card listing-products h-100">
+                                <a :href="`/produto/${product.sku}`">
+                                    <img :src="product.image_path" class="card-img-top" 
+                                         style="height: 13rem;width: 100%; object-fit: cover; border-radius: 7px;" 
+                                         :alt="product.name">
+                                </a>
+                                <div class="card-body d-flex flex-column" style="padding: 1rem;">
+                                    <a :href="`/produto/${product.sku}`" class="text-decoration-none">
+                                        <h5 class="card-title" x-text="product.name"></h5>
+                                    </a>
+                                    <p class="c-orange fw-bold mt-auto">
+                                        R$ <span x-text="product.price"></span>
+                                    </p>
+                                    <small x-show="product.quantity > 0" class="text-success">
+                                        <i class="bi bi-check-circle"></i> Em estoque
+                                    </small>
+                                    <small x-show="product.quantity <= 0" class="text-danger">
+                                        <i class="bi bi-x-circle"></i> Indisponível
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <template x-if="products.length === 0 && !loading">
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <i class="bi bi-info-circle"></i> Nenhum produto encontrado nesta categoria.
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Paginação -->
+        <div x-show="pagination.totalPages > 0 && !loading" class="row mt-5">
+            <div class="col">
+                <nav aria-label="Navegação de página">
+                    <ul class="pagination justify-content-center">
+                        <!-- Botão Anterior -->
+                        <li class="page-item" :class="{ 'disabled': !pagination.hasPrev }">
+                            <a class="page-link" href="#" @click.prevent="changePage(pagination.currentPage - 1)" 
+                               aria-label="Anterior">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        <!-- Primeira página -->
+                        <template x-if="pageNumbers.start > 1">
+                            <li class="page-item">
+                                <a class="page-link" href="#" @click.prevent="changePage(1)">1</a>
+                            </li>
+                        </template>
+
+                        <!-- Reticências iniciais -->
+                        <template x-if="pageNumbers.start > 2">
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        </template>
+
+                        <!-- Números das páginas -->
+                        <template x-for="page in pageNumbers.pages" :key="page">
+                            <li class="page-item" :class="{ 'active': page === pagination.currentPage }">
+                                <a class="page-link" href="#" @click.prevent="changePage(page)" x-text="page"></a>
+                            </li>
+                        </template>
+
+                        <!-- Reticências finais -->
+                        <template x-if="pageNumbers.end < pagination.totalPages - 1">
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        </template>
+
+                        <!-- Última página -->
+                        <template x-if="pageNumbers.end < pagination.totalPages">
+                            <li class="page-item">
+                                <a class="page-link" href="#" 
+                                   @click.prevent="changePage(pagination.totalPages)" 
+                                   x-text="pagination.totalPages"></a>
+                            </li>
+                        </template>
+
+                        <!-- Botão Próximo -->
+                        <li class="page-item" :class="{ 'disabled': !pagination.hasNext }">
+                            <a class="page-link" href="#" @click.prevent="changePage(pagination.currentPage + 1)" 
+                               aria-label="Próximo">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Info de Paginação -->
+                <p class="text-center text-muted">
+                    Página <span x-text="pagination.currentPage"></span> de <span x-text="pagination.totalPages"></span>
+                    <span x-show="pagination.startItem > 0">
+                        (Exibindo <span x-text="pagination.startItem"></span> - <span x-text="pagination.endItem"></span> de <span x-text="pagination.total"></span>)
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function productCategory(categoryId, initialProducts, initialPagination) {
+            return {
+                categoryId: categoryId,
+                products: initialProducts || [],
+                pagination: initialPagination || {},
+                loading: false,
+
+                get pageNumbers() {
+                    const maxPages = 5;
+                    const current = this.pagination.currentPage;
+                    const total = this.pagination.totalPages;
+                    
+                    let start = Math.max(1, current - Math.floor(maxPages / 2));
+                    let end = Math.min(total, start + maxPages - 1);
+                    
+                    if (end - start < maxPages - 1) {
+                        start = Math.max(1, end - maxPages + 1);
+                    }
+                    
+                    const pages = [];
+                    for (let i = start; i <= end; i++) {
+                        pages.push(i);
+                    }
+                    
+                    return { start, end, pages };
+                },
+
+                async changePage(page) {
+                    if (page < 1 || page > this.pagination.totalPages || page === this.pagination.currentPage) {
+                        return;
+                    }
+
+                    this.loading = true;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    try {
+                        const response = await fetch(
+                            `/api/products/category/id/${this.categoryId}?page=${page}&limit=${this.pagination.limit}`
+                        );
+                        
+                        if (!response.ok) {
+                            throw new Error('Erro ao carregar produtos');
+                        }
+
+                        const data = await response.json();
+                        
+                        // Os produtos já vêm com as imagens do servidor
+                        this.products = data.products;
+                        this.pagination = {
+                            currentPage: data.currentPage,
+                            totalPages: data.totalPages,
+                            total: data.totalCount,
+                            limit: this.pagination.limit,
+                            hasNext: data.currentPage < data.totalPages,
+                            hasPrev: data.currentPage > 1,
+                            startItem: data.totalCount > 0 ? ((data.currentPage - 1) * this.pagination.limit) + 1 : 0,
+                            endItem: Math.min(data.currentPage * this.pagination.limit, data.totalCount)
+                        };
+
+                        const url = new URL(window.location);
+                        url.searchParams.set('page', page);
+                        window.history.pushState({}, '', url);
+
+                    } catch (error) {
+                        console.error('Erro ao carregar produtos:', error);
+                        alert('Erro ao carregar produtos. Tente novamente.');
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+                            }
+        }
+    </script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/public/js/bootstrap.js"></script>
+    <script src="/public/js/bootstrap.min.js"></script>
+    <script src="/public/js/bootstrap.bundle.js"></script>
+
+    <%- include('../footer') %>
+
+</body>
+</html>

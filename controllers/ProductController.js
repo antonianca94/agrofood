@@ -7,6 +7,93 @@ const API_BASE_URL = process.env.API_URL; // URL da sua API Go
 
 const axios = require('axios');
 
+
+const getProductsByCategory = async (req, res) => {
+    const categoryId = req.params.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+    const user = req.user;
+
+    try {
+        // Buscar informações da categoria e produtos em paralelo
+        const [categoryResponse, productsResponse] = await Promise.all([
+            axios.get(`${API_BASE_URL}/categories/${categoryId}`),
+            axios.get(`${API_BASE_URL}/products/category/id/${categoryId}`, {
+                params: { page, limit }
+            })
+        ]);
+
+        const category = categoryResponse.data;
+        const { products, currentPage, totalCount, totalPages } = productsResponse.data;
+
+        // Buscar imagens destacadas para todos os produtos
+        const productsWithImages = await Promise.all(
+            products.map(async (product) => {
+                try {
+                    const imageResponse = await axios.get(
+                        `${API_BASE_URL}/images/${product.id}/type?type=featured_image`
+                    );
+                    const featuredImage = imageResponse.data;
+                    
+                    return {
+                        ...product,
+                        image_path: featuredImage?.length > 0 
+                            ? featuredImage[0].path 
+                            : '/public/img/no-image.png'
+                    };
+                } catch (error) {
+                    console.error(`Erro ao buscar imagem do produto ${product.id}:`, error.message);
+                    return {
+                        ...product,
+                        image_path: '/public/img/no-image.png'
+                    };
+                }
+            })
+        );
+
+        // Montar objeto de paginação com dados da API
+        const pagination = {
+            currentPage: currentPage,
+            totalPages: totalPages,
+            total: totalCount,
+            limit: limit,
+            hasNext: currentPage < totalPages,
+            hasPrev: currentPage > 1,
+            startItem: totalCount > 0 ? ((currentPage - 1) * limit) + 1 : 0,
+            endItem: Math.min(currentPage * limit, totalCount)
+        };
+
+        // Renderizar a view
+        res.render('site/category/index', {
+            pageTitle: category.name || 'Produtos',
+            products: productsWithImages,
+            category: category,
+            pagination: pagination,
+            user: user
+        });
+
+    } catch (error) {
+        console.error('Erro ao buscar produtos por categoria:', error.message);
+        
+        // Tratamento de erros específicos
+        if (error.response) {
+            const status = error.response.status;
+            
+            if (status === 404) {
+                return res.status(404).render('error', {
+                    message: 'Categoria não encontrada',
+                    user: user
+                });
+            }
+            
+            return res.status(status).send('Erro ao buscar produtos');
+        }
+        
+        res.status(500).send('Erro interno do servidor');
+    }
+};
+
+
 const getAllProducts = async (req, res) => {
     try {
         let products;
@@ -384,5 +471,6 @@ module.exports = {
     showEditProductForm,
     updateProduct,
     getProductBySKU,
-    deleteImage
+    deleteImage,
+    getProductsByCategory
 };
