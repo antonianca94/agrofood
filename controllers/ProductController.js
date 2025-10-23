@@ -26,12 +26,33 @@ const getProductsByCategory = async (req, res) => {
         const category = categoryResponse.data;
         const { products, currentPage, totalCount, totalPages } = productsResponse.data;
 
+        // Verificar se não há produtos
+        if (!products || products.length === 0) {
+            return res.render('site/category/index', {
+                pageTitle: category.name || 'Produtos',
+                products: [],
+                category: category,
+                pagination: {
+                    currentPage: 1,
+                    totalPages: 0,
+                    total: 0,
+                    limit: limit,
+                    hasNext: false,
+                    hasPrev: false,
+                    startItem: 0,
+                    endItem: 0
+                },
+                user: user
+            });
+        }
+
         // Buscar imagens destacadas para todos os produtos
         const productsWithImages = await Promise.all(
             products.map(async (product) => {
                 try {
                     const imageResponse = await axios.get(
-                        `${API_BASE_URL}/images/${product.id}/type?type=featured_image`
+                        `${API_BASE_URL}/images/${product.id}/type?type=featured_image`,
+                        { timeout: 3000 }
                     );
                     const featuredImage = imageResponse.data;
                     
@@ -81,15 +102,26 @@ const getProductsByCategory = async (req, res) => {
             
             if (status === 404) {
                 return res.status(404).render('error', {
-                    message: 'Categoria não encontrada',
+                    pageTitle: 'Categoria não encontrada',
+                    message: 'A categoria que você procura não existe.',
                     user: user
                 });
             }
             
-            return res.status(status).send('Erro ao buscar produtos');
+            // Outros erros da API
+            return res.status(status).render('error', {
+                pageTitle: 'Erro',
+                message: 'Não foi possível carregar os produtos desta categoria.',
+                user: user
+            });
         }
         
-        res.status(500).send('Erro interno do servidor');
+        // Erro de conexão ou timeout
+        res.status(500).render('error', {
+            pageTitle: 'Erro',
+            message: 'Erro ao conectar com o servidor. Tente novamente mais tarde.',
+            user: user
+        });
     }
 };
 

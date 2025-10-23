@@ -163,15 +163,28 @@ app.get('/categoria/:id', productController.getProductsByCategory);
 app.get('/api/products/category/id/:id', async (req, res) => {
     const categoryId = req.params.id;
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const limit = parseInt(req.query.limit) || 8;
 
     try {
         const response = await axios.get(
             `${API_BASE_URL}/products/category/id/${categoryId}`,
-            { params: { page, limit } }
+            { 
+                params: { page, limit },
+                timeout: 5000
+            }
         );
 
         const { products, currentPage, totalCount, totalPages } = response.data;
+
+        // Verificar se não há produtos
+        if (!products || products.length === 0) {
+            return res.json({
+                products: [],
+                currentPage: 1,
+                totalCount: 0,
+                totalPages: 0
+            });
+        }
 
         // Buscar imagens para todos os produtos
         const productsWithImages = await Promise.all(
@@ -208,8 +221,23 @@ app.get('/api/products/category/id/:id', async (req, res) => {
         });
     } catch (error) {
         console.error('Erro ao buscar produtos:', error.message);
+        
+        // Retornar estrutura vazia em vez de erro 500
+        if (error.response?.status === 404) {
+            return res.json({
+                products: [],
+                currentPage: 1,
+                totalCount: 0,
+                totalPages: 0
+            });
+        }
+        
         res.status(error.response?.status || 500).json({ 
-            error: 'Erro ao buscar produtos' 
+            error: 'Erro ao buscar produtos',
+            products: [],
+            currentPage: 1,
+            totalCount: 0,
+            totalPages: 0
         });
     }
 });
