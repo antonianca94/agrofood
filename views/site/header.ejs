@@ -1,3 +1,87 @@
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 0 0 8px 8px;
+        max-height: 400px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-top: 2px;
+    }
+    
+    .search-item {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f1f1f1;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .search-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .search-item:last-child {
+        border-bottom: none;
+    }
+    
+    .search-loading, .search-no-results {
+        padding: 20px;
+        text-align: center;
+        color: #666;
+    }
+    
+    .search-no-results {
+        color: #999;
+    }
+    
+    .search-wrapper {
+        position: relative;
+    }
+    
+    .product-sku {
+        font-size: 0.85rem;
+        color: #666;
+    }
+    
+    .product-price {
+        font-weight: 600;
+        color: #ff6b35;
+    }
+    
+    .product-category {
+        font-size: 0.8rem;
+        color: #999;
+        background: #f1f1f1;
+        padding: 2px 8px;
+        border-radius: 12px;
+        display: inline-block;
+    }
+    
+    .product-thumb {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .product-thumb-placeholder {
+        width: 60px;
+        height: 60px;
+        background: #f1f1f1;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+    }
+</style>
 <nav class="navbar navbar-expand-lg navbar-light py-3" style="background: #fff;">
     <div class="container">
         <a href="/" class="navbar-brand c-orange" style="line-height: 0.69rem;">
@@ -9,12 +93,95 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <div class="col-6 ms-auto">
-                <form class="d-flex">
-                    <div class="input-group">                    
-                        <input type="text" class="form-control" placeholder="Pesquisar" style="background: #f1f1f1;">
-                        <button type="button" class="btn btn-secondary"><i class="bi-search"></i></button>
-                    </div>
-                </form>
+                <div 
+                    x-data="productSearch()" 
+                    @click.away="showResults = false"
+                >
+                    <form class="d-flex" @submit.prevent="search">
+                        <div class="input-group search-wrapper">                    
+                            <input 
+                                type="text" 
+                                x-model="query"
+                                @input.debounce.300ms="search"
+                                @focus="showResults = true"
+                                class="form-control" 
+                                placeholder="Pesquisar" 
+                                style="background: #f1f1f1;"
+                                autocomplete="off">
+                            <button type="button" class="btn btn-secondary" @click="search">
+                                <i class="bi-search"></i>
+                            </button>
+                            
+                            <!-- Resultados da pesquisa -->
+                            <div 
+                                class="search-results" 
+                                x-show="showResults && (products.length > 0 || loading || noResults)"
+                                x-transition
+                            >
+                                <!-- Loading -->
+                                <div x-show="loading" class="search-loading">
+                                    <i class="bi bi-hourglass-split"></i> Buscando...
+                                </div>
+
+                                <!-- Sem resultados -->
+                                <div x-show="noResults && !loading" class="search-no-results">
+                                    <i class="bi bi-inbox"></i> Nenhum produto encontrado
+                                </div>
+
+                                <!-- Lista de produtos -->
+                                <template x-for="product in products" :key="product.id">
+                                    <div 
+                                        class="search-item" 
+                                        @click="goToProduct(product.sku)"
+                                    >
+                                        <div class="d-flex gap-3 align-items-start">
+                                            <!-- Imagem do produto -->
+                                            <div class="flex-shrink-0">
+                                                <template x-if="product.featured_image">
+                                                    <img 
+                                                        :src="product.featured_image" 
+                                                        :alt="product.name"
+                                                        class="product-thumb"
+                                                        @error="handleImageError($event)"
+                                                    >
+                                                </template>
+                                                <template x-if="!product.featured_image">
+                                                    <div class="product-thumb-placeholder">
+                                                        <i class="bi bi-image"></i>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            
+                                            <!-- Informações do produto -->
+                                            <div class="flex-grow-1">
+                                                <div class="fw-bold" x-text="product.name"></div>
+                                                <div class="product-sku">SKU: <span x-text="product.sku"></span></div>
+                                                <span class="product-category mt-1" x-text="product.category_name"></span>
+                                            </div>
+                                            
+                                            <!-- Preço e quantidade -->
+                                            <div class="text-end flex-shrink-0">
+                                                <div class="product-price" x-text="formatPrice(product.price)"></div>
+                                                <small class="text-muted">Qtd: <span x-text="product.quantity"></span></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Total de resultados -->
+                                <div 
+                                    x-show="totalCount > 10" 
+                                    class="search-item text-center" 
+                                    style="background: #f8f9fa; cursor: default;"
+                                >
+                                    <small class="text-muted">
+                                        Mostrando 10 de <span x-text="totalCount"></span> resultados
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
             <ul class="navbar-nav ms-auto d-flex align-items-center">
                 <% if (user) { %>
@@ -50,8 +217,100 @@
                 <a href="/" class="nav-item nav-link active ">Home</a>
                 <a href="#" class="nav-item nav-link">Cadastro</a>
                 <a href="/register" class="nav-item nav-link">Registro Produtor</a>
-                
             </div>
         </div>
     </div>
 </nav>
+<script>
+    function productSearch() {
+        return {
+            query: '',
+            products: [],
+            loading: false,
+            showResults: false,
+            noResults: false,
+            totalCount: 0,
+            apiUrl: 'http://localhost:3002',
+
+            async search() {
+                if (this.query.trim() === '') {
+                    this.products = [];
+                    this.showResults = false;
+                    this.noResults = false;
+                    return;
+                }
+
+                this.loading = true;
+                this.noResults = false;
+                this.showResults = true;
+
+                try {
+                    const response = await fetch(
+                        `${this.apiUrl}/products/search?q=${encodeURIComponent(this.query)}&page=1&limit=10`
+                    );
+
+                    if (!response.ok) {
+                        throw new Error('Erro na busca');
+                    }
+
+                    const data = await response.json();
+                    
+                    this.products = data.products || [];
+                    this.totalCount = data.totalCount || 0;
+                    this.noResults = this.products.length === 0;
+
+                    // Buscar imagens para cada produto
+                    await this.loadProductImages();
+                } catch (error) {
+                    console.error('Erro ao buscar produtos:', error);
+                    this.products = [];
+                    this.noResults = true;
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async loadProductImages() {
+                const imagePromises = this.products.map(async (product) => {
+                    try {
+                        const response = await fetch(
+                            `${this.apiUrl}/images/${product.id}/type?type=featured_image`
+                        );
+                        
+                        if (response.ok) {
+                            const images = await response.json();
+                            if (images && images.length > 0) {
+                                product.featured_image = images[0].path;
+                            } else {
+                                product.featured_image = null;
+                            }
+                        } else {
+                            product.featured_image = null;
+                        }
+                    } catch (error) {
+                        console.error(`Erro ao carregar imagem do produto ${product.id}:`, error);
+                        product.featured_image = null;
+                    }
+                });
+
+                await Promise.all(imagePromises);
+            },
+
+            formatPrice(price) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(price);
+            },
+
+            goToProduct(productSku) {
+                window.location.href = `/produto/${productSku}`;
+            },
+
+            handleImageError(event) {
+                event.target.style.display = 'none';
+                event.target.parentElement.innerHTML = '<div class="product-thumb-placeholder"><i class="bi bi-image"></i></div>';
+            }
+        }
+    }
+</script>
