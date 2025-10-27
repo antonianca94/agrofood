@@ -10,6 +10,9 @@ const CategoriesController = require('./controllers/CategoriesController');
 const productController = require('./controllers/ProductController');
 const RegisterController = require('./controllers/RegisterController');
 const VendorsController = require('./controllers/VendorsController');
+
+const BuyersController = require('./controllers/BuyersController');
+
 const CartController = require('./controllers/CartController');
 
 const cacheController = require('express-cache-controller');
@@ -144,6 +147,11 @@ app.get('/login', (req, res) => {
 app.get('/cadastro-produtor', RegisterController.showRegisterVendor);
 app.post('/cadastro-produtor', RegisterController.registerVendor);
 // REGISTRO PRODUTOR
+
+// REGISTRO COMPRADOR
+app.get('/cadastro-comprador', BuyersController.showRegisterBuyer);
+app.post('/cadastro-comprador', BuyersController.registerBuyer);
+// REGISTRO COMPRADOR
 
 // HOME
 app.get('/', async (req, res) => {
