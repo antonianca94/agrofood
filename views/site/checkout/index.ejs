@@ -319,12 +319,12 @@
                                 `Seu pedido foi realizado com sucesso!${ordersList}`
                             }
                         `,
-                        confirmButtonText: 'Ver Meus Pedidos',
+                        confirmButtonText: 'Ver Minhas Compras',
                         showCancelButton: true,
                         cancelButtonText: 'Continuar Comprando'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            window.location.href = '/meus-pedidos';
+                            window.location.href = '/compras';
                         } else {
                             window.location.href = '/produtos';
                         }
