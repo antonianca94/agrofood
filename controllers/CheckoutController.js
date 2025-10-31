@@ -496,7 +496,7 @@ const getOrderDetails = async (req, res) => {
 
         const user = req.user;
         const orderId = req.params.id;
-        const userRole = req.user.roles_id; // Obtém o roles_id do usuário autenticado
+        const userRole = req.user.roles_id;
 
         const response = await fetch(`${API_BASE_URL}/orders/${orderId}/details`);
 
@@ -544,8 +544,9 @@ const getOrderDetails = async (req, res) => {
         };
         order.paymentMethodFormatted = paymentMap[order.payment_method] || order.payment_method;
 
-        // Formatar itens
-        items.forEach(item => {
+        // Buscar imagens para cada produto e formatar itens
+        for (const item of items) {
+            // Formatar preços
             item.priceFormatted = parseFloat(item.price).toLocaleString('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
@@ -555,10 +556,23 @@ const getOrderDetails = async (req, res) => {
                 style: 'currency',
                 currency: 'BRL'
             });
-        });
-       
-        console.log(items)
-        console.log(order)
+
+            // Buscar imagem featured do produto
+            try {
+                const imageRes = await axios.get(`${API_BASE_URL}/images/${item.products_id}`);
+                if (imageRes.status === 200) {
+                    const images = imageRes.data;
+                    const featured = images.find(img => img.type === 'featured_image');
+                    item.featuredImage = featured ? featured.path : null;
+                }
+            } catch (error) {
+                console.error(`Erro ao buscar imagem do produto ${item.products_id}:`, error);
+                item.featuredImage = null;
+            }
+        }
+
+        // console.log(items);
+        // console.log(order);
 
         res.render('orders/details/index', {
             pageTitle: `Pedido #${order.order_number}`,

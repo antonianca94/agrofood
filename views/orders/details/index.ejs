@@ -90,7 +90,19 @@
                                 <% items.forEach((item, index) => { %>
                                     <div class="row align-items-center py-3 <%= index < items.length - 1 ? 'border-bottom' : '' %>">
                                         <div class="col-md-2 text-center mb-3 mb-md-0">
-                                            <i class="bi bi-image fs-1 text-muted"></i>
+                                            <div class="product-image-container">
+                                                <% if (item.featuredImage) { %>
+                                                    <img 
+                                                        src="<%= item.featuredImage %>" 
+                                                        alt="<%= item.product_name %>" 
+                                                        class="product-image"
+                                                    >
+                                                <% } else { %>
+                                                    <div class="product-image-placeholder">
+                                                        <i class="bi bi-image fs-1 text-muted"></i>
+                                                    </div>
+                                                <% } %>
+                                            </div>
                                         </div>
                                         <div class="col-md-5 mb-3 mb-md-0">
                                             <h6 class="mb-1"><%= item.product_name %></h6>
@@ -318,6 +330,35 @@
     </script>
 
     <style>
+
+        .product-image-container {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .product-image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .timeline {
             position: relative;
             padding-left: 30px;
