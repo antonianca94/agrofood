@@ -15,6 +15,9 @@ const BuyersController = require('./controllers/BuyersController');
 
 const CartController = require('./controllers/CartController');
 
+
+const CheckoutController = require('./controllers/CheckoutController');
+
 const cacheController = require('express-cache-controller');
 
 const PORT = process.env.PORT || 3000;
@@ -51,6 +54,7 @@ const LocalStrategy = require('passport-local').Strategy;
 app.set('view engine', 'ejs');
 app.set('views', './views');
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 app.use(session({
     secret: 'agrofood-marketplace',
@@ -297,7 +301,12 @@ const getRoutesForRole = (roleId) => {
                 '/users/:id',
                 '/vendors',
                 '/vendors/:id/edit',
-                '/vendors/:id'
+                '/vendors/:id',
+                '/checkout',
+                '/finalizar-compra',
+                '/compras/por-vendedor',
+                '/compras',
+                '/pedido/:id',
                 // Adicione outras rotas permitidas para o administrador conforme necessário
             ];
         case 2: // Role de usuário normal
@@ -309,9 +318,13 @@ const getRoutesForRole = (roleId) => {
                 '/products/:id',
                 // Adicione outras rotas permitidas para o usuário normal conforme necessário
             ];
-        default: 
+        case 3:
             return [
-                '/dashboard'
+                '/checkout',
+                '/finalizar-compra',
+                '/compras/por-vendedor',
+                '/compras',
+                '/pedido/:id'
             ];
     }
 };
@@ -389,6 +402,14 @@ app.get('/carrinho', CartController.getCart);
 app.post('/carrinho/increment', CartController.incrementCartItem);
 app.post('/carrinho/decrement', CartController.decrementCartItem);
 // CARRINHO
+
+
+// Página de checkout (com preview multi-vendor)
+app.get('/checkout', isAuthenticated, CheckoutController.getCartPreview);
+app.post('/finalizar-compra', isAuthenticated,  CheckoutController.processMultiVendorCheckout);
+app.get('/compras', isAuthenticated, CheckoutController.getUserOrdersByVendor);
+app.get('/compras2', CheckoutController.getUserOrders);
+app.get('/pedido/:id', isAuthenticated, CheckoutController.getOrderDetails);
 
 app.listen(PORT, () => {
     console.log(`O servidor está em execução http://localhost:${PORT}`);

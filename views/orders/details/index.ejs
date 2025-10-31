@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %></title>
+    
+    <link href="/public/css/bootstrap.css" rel="stylesheet" />
+    <link href="/public/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="/public/css/agrofood.css" rel="stylesheet" />
+</head>
+
+<body class="order_details_page">
+
+    <%- include('../../header', { user: user }) %>
+    <div class="main-content d-xxl-flex d-xl-flex d-lg-flex"> 
+        <%- include('../../sidebar', { pageType: 'Compras', userRole }) %>
+        <div class="container-fluid mt-5 mb-5 m-xxl-4 m-xl-4 m-lg-4 m-md-4 m-sm-4">
+            <!-- Breadcrumb / Voltar -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <a href="/compras" class="text-decoration-none">
+                        <i class="bi bi-arrow-left me-2"></i> Voltar para Minhas Compras
+                    </a>
+                </div>
+            </div>
+
+            <!-- Header do Pedido -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card p-4">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <h4 class="mb-2">
+                                        <i class="bi bi-receipt c-orange me-2"></i>
+                                        Pedido #<%= order.order_number %>
+                                    </h4>
+                                    <p class="mb-0 text-muted">
+                                        Realizado em <span class="c-orange"><%= order.createdAtFormatted %> </span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                                    <% 
+                                    let badgeClass = 'bg-secondary';
+                                    switch(order.status) {
+                                        case 'pending':
+                                            badgeClass = 'bg-warning';
+                                            break;
+                                        case 'processing':
+                                            badgeClass = 'bg-info';
+                                            break;
+                                        case 'shipped':
+                                            badgeClass = 'bg-primary';
+                                            break;
+                                        case 'delivered':
+                                            badgeClass = 'bg-success';
+                                            break;
+                                        case 'cancelled':
+                                            badgeClass = 'bg-danger';
+                                            break;
+                                    }
+                                    %>
+                                    <span class="badge <%= badgeClass %> fs-6 px-3 py-2">
+                                        <%= order.statusFormatted %>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Coluna Esquerda - Produtos e Informações -->
+                <div class="col-lg-8">
+                    
+                    <!-- Produtos do Pedido -->
+                    <div class="card p-4 mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-box-seam c-orange me-2"></i>
+                                Produtos
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <% if (items && items.length > 0) { %>
+                                <% items.forEach((item, index) => { %>
+                                    <div class="row align-items-center py-3 <%= index < items.length - 1 ? 'border-bottom' : '' %>">
+                                        <div class="col-md-2 text-center mb-3 mb-md-0">
+                                            <i class="bi bi-image fs-1 text-muted"></i>
+                                        </div>
+                                        <div class="col-md-5 mb-3 mb-md-0">
+                                            <h6 class="mb-1"><%= item.product_name %></h6>
+                                            <% if (item.vendor_name) { %>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-shop"></i> <%= item.vendor_name %>
+                                                </small>
+                                            <% } %>
+                                        </div>
+                                        <div class="col-md-2 text-center mb-3 mb-md-0">
+                                            <small class="text-muted d-block">Quantidade</small>
+                                            <strong><%= item.quantity %></strong>
+                                        </div>
+                                        <div class="col-md-3 text-md-end">
+                                            <small class="text-muted d-block">Subtotal</small>
+                                            <strong class="c-orange"><%= item.subtotalFormatted %></strong>
+                                            <br>
+                                            <small class="text-muted"><%= item.priceFormatted %> cada</small>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <p class="text-muted mb-0">Nenhum produto encontrado neste pedido.</p>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Informações do Vendedor -->
+                    <% if (order.VendorName) { %>
+                    <div class="card p-4 mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-shop c-orange me-2"></i>
+                                Informações do Vendedor
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3 mb-md-0">
+                                    <small class="text-muted d-block">Nome</small>
+                                    <strong><%= order.VendorName %></strong>
+                                </div>
+                                <% if (order.VendorEmail) { %>
+                                <div class="col-md-4 mb-3 mb-md-0">
+                                    <small class="text-muted d-block">E-mail</small>
+                                    <a href="mailto:<%= order.VendorEmail %>"><%= order.VendorEmail %></a>
+                                </div>
+                                <% } %>
+                                <% if (order.VendorPhone) { %>
+                                <div class="col-md-4">
+                                    <small class="text-muted d-block">Telefone</small>
+                                    <a href="tel:<%= order.VendorPhone %>"><%= order.VendorPhone %></a>
+                                </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
+
+                    <!-- Timeline do Pedido -->
+                    <div class="card p-4 mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-clock-history c-orange me-2"></i>
+                                Status do Pedido
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                <div class="timeline-item <%= order.status === 'pending' || order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered' ? 'active' : '' %>">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h6>Pedido Realizado</h6>
+                                        <p class="text-muted mb-0"><%= order.createdAtFormatted %></p>
+                                    </div>
+                                </div>
+
+                                <div class="timeline-item <%= order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered' ? 'active' : '' %>">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h6>Em Processamento</h6>
+                                        <p class="text-muted mb-0">Seu pedido está sendo preparado</p>
+                                    </div>
+                                </div>
+
+                                <div class="timeline-item <%= order.status === 'shipped' || order.status === 'delivered' ? 'active' : '' %>">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h6>Enviado</h6>
+                                        <p class="text-muted mb-0">Seu pedido está a caminho</p>
+                                    </div>
+                                </div>
+
+                                <div class="timeline-item <%= order.status === 'delivered' ? 'active' : '' %>">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h6>Entregue</h6>
+                                        <p class="text-muted mb-0">Pedido entregue com sucesso!</p>
+                                    </div>
+                                </div>
+
+                                <% if (order.status === 'cancelled') { %>
+                                <div class="timeline-item cancelled">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-content">
+                                        <h6>Cancelado</h6>
+                                        <p class="text-muted mb-0">Este pedido foi cancelado</p>
+                                    </div>
+                                </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Coluna Direita - Resumo e Endereço -->
+                <div class="col-lg-4">
+                    
+                    <!-- Resumo do Pedido -->
+                    <div class="card p-4 mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-receipt-cutoff c-orange me-2"></i>
+                                Resumo
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Total</span>
+                                <strong class="c-orange fs-4"><%= order.totalFormatted %></strong>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-2">
+                                <small class="text-muted">Pagamento</small>
+                                <small class="c-orange fw-bold"><%= order.paymentMethodFormatted %></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Endereço de Entrega -->
+                    <div class="card p-4 mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-geo-alt-fill c-orange me-2"></i>
+                                Endereço de Entrega
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-1"><strong><%= order.shipping_address %></strong></p>
+                            <p class="mb-1"><%= order.shipping_city %>/<%= order.shipping_state %></p>
+                            <p class="mb-0">CEP: <%= order.shipping_cep %></p>
+                        </div>
+                    </div>
+
+                    <!-- Ações -->
+                    <div class="card p-4">
+                        <div class="card-body">
+                            <% if (order.status === 'pending' || order.status === 'processing') { %>
+                            <button class="btn btn-danger btn-sm w-100 mb-2" onclick="cancelOrder(this)" data-order-id="<%= order.id %>">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Cancelar Pedido
+                            </button>
+                            <% } %>
+
+                            <% if (order.status === 'delivered') { %>
+                            <button class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                <i class="bi bi-star me-2"></i>
+                                Avaliar Produtos
+                            </button>
+                            <button class="btn btn-outline-success btn-sm w-100">
+                                <i class="bi bi-arrow-clockwise me-2"></i>
+                                Comprar Novamente
+                            </button>
+                            <% } %>
+
+                            <% if (order.status === 'shipped') { %>
+                            <button class="btn btn-outline-info btn-sm w-100">
+                                <i class="bi bi-truck me-2"></i>
+                                Rastrear Pedido
+                            </button>
+                            <% } %>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="footer">
+                <%- include('../../footer') %>
+            </div>
+            <!-- FOOTER -->
+        </div>
+    </div>
+
+    <script>
+        function cancelOrder(button) {
+            const orderId = button.getAttribute('data-order-id');
+            
+            if (!confirm('Tem certeza que deseja cancelar este pedido?')) {
+                return;
+            }
+
+            fetch(`/api/orders/${orderId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Pedido cancelado com sucesso!');
+                    window.location.reload();
+                } else {
+                    alert('Erro ao cancelar pedido: ' + (data.message || 'Tente novamente'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao cancelar pedido');
+            });
+        }
+    </script>
+
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 30px;
+            opacity: 0.5;
+        }
+
+        .timeline-item.active {
+            opacity: 1;
+        }
+
+        .timeline-item.cancelled {
+            opacity: 1;
+        }
+
+        .timeline-item .timeline-marker {
+            position: absolute;
+            left: -23px;
+            top: 5px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #e0e0e0;
+        }
+
+        .timeline-item.active .timeline-marker {
+            background: #d96900;
+            box-shadow: 0 0 0 2px #d96900;
+        }
+
+        .timeline-item.cancelled .timeline-marker {
+            background: #dc3545;
+            box-shadow: 0 0 0 2px #dc3545;
+        }
+
+        .timeline-item:after {
+            content: '';
+            position: absolute;
+            left: -16px;
+            top: 20px;
+            width: 2px;
+            height: calc(100% - 15px);
+            background: #e0e0e0;
+        }
+
+        .timeline-item:last-child:after {
+            display: none;
+        }
+
+        .timeline-item.active:after {
+            background: #d96900;
+        }
+
+        .timeline-content h6 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .timeline-content p {
+            font-size: 0.875rem;
+        }
+
+        .c-orange {
+            color: #d96900;
+        }
+    </style>
+
+
+
+</body>
+</html>

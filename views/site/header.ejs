@@ -196,7 +196,13 @@
                         <i class="bi bi-person c-orange" style="font-size: 20px !important;"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <% if (user.roles_id !== 3) { %> 
                         <li><a class="dropdown-item" href="/dashboard"><i class="bi bi-layout-sidebar me-2 c-orange"></i>Meu Painel</a></li>
+                        <% } %> 
+                        <% if (user.roles_id === 3) { %> 
+                        <li><a class="dropdown-item" href="/compras"><i class="bi bi-layout-sidebar me-2 c-orange"></i>Minhas Compras</a></li>
+                        <% } %> 
+
                         <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right me-2 c-orange"></i>Logout</a></li>
                     </ul>
                 </li>

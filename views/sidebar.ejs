@@ -1,12 +1,15 @@
 <div class="sidebar bg-white rounded mt-4 ms-xxl-4 ms-xl-4 ms-lg-4 me-3 ms-3 me-xxl-0 me-xl-0 me-lg-0">
     <div class="d-flex flex-column flex-shrink-0 p-3 " style="width: 280px;">
         <ul class="nav nav-pills flex-column mb-auto">
+            <% if (userRole === 1) { %> 
+
             <li class="nav-item">
                 <a href="/dashboard" class="nav-link <%= pageType === 'Painel' ? 'active' : '' %>" aria-current="page">
                     <i class="bi bi-house"></i>
                     Painel 
                 </a>
             </li>
+            <% } %> 
             <% if (userRole != 3) { %> 
             <li class="nav-item">
                 <a href="/products" class="nav-link <%= pageType === 'Produtos' ? 'active' : '' %>" aria-current="page">
@@ -47,6 +50,16 @@
                 </a>
             </li>
             <% } %> 
+
+            <% if (userRole === 1 || userRole === 3) { %> 
+            <li class="nav-item">
+                <a href="/compras" class="nav-link <%= pageType === 'Compras' ? 'active' : '' %>" aria-current="page">
+                    <i class="bi bi-receipt"></i>
+                    Compras
+                </a>
+            </li>
+            <% } %> 
+
         </ul>
     </div>
 </div>
