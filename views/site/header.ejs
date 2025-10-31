@@ -1,5 +1,9 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <style>
+    [x-cloak] {
+        display: none !important;
+    }
+    
     .search-results {
         position: absolute;
         top: 100%;
@@ -116,6 +120,7 @@
                             <div 
                                 class="search-results" 
                                 x-show="showResults && (products.length > 0 || loading || noResults)"
+                                x-cloak
                                 x-transition
                             >
                                 <!-- Loading -->
