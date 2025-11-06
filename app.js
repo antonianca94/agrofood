@@ -306,17 +306,20 @@ const getRoutesForRole = (roleId) => {
                 '/finalizar-compra',
                 '/compras/por-vendedor',
                 '/compras',
-                '/pedido/:id',
+                '/compra/:id',
+                '/vendas',
+                '/venda/:id',
                 // Adicione outras rotas permitidas para o administrador conforme necessário
             ];
-        case 2: // Role de usuário normal
+        case 2: // Role de produtor
             return [
                 '/dashboard',
                 '/products',
                 '/products/new',
                 '/products/:id/edit',
                 '/products/:id',
-                // Adicione outras rotas permitidas para o usuário normal conforme necessário
+                '/vendas',
+                '/venda/:id'
             ];
         case 3:
             return [
@@ -324,7 +327,7 @@ const getRoutesForRole = (roleId) => {
                 '/finalizar-compra',
                 '/compras/por-vendedor',
                 '/compras',
-                '/pedido/:id'
+                '/compra/:id',
             ];
     }
 };
@@ -407,9 +410,18 @@ app.post('/carrinho/decrement', CartController.decrementCartItem);
 // Página de checkout (com preview multi-vendor)
 app.get('/checkout', isAuthenticated, CheckoutController.getCartPreview);
 app.post('/finalizar-compra', isAuthenticated,  CheckoutController.processMultiVendorCheckout);
+
+// COMPRAS EFETUADAS
 app.get('/compras', isAuthenticated, CheckoutController.getUserOrdersByVendor);
 app.get('/compras2', CheckoutController.getUserOrders);
-app.get('/pedido/:id', isAuthenticated, CheckoutController.getOrderDetails);
+app.get('/compra/:id', isAuthenticated, CheckoutController.getOrderDetails);
+// COMPRAS EFETUADAS
+
+// VENDAS RECEBIDAS
+app.get('/vendas', isAuthenticated, CheckoutController.getVendorOrders);
+app.get('/venda/:id', isAuthenticated, CheckoutController.getVendorOrderDetails);
+app.patch('/venda/:id/status', isAuthenticated, CheckoutController.updateOrderStatus);
+// VENDAS RECEBIDAS
 
 app.listen(PORT, () => {
     console.log(`O servidor está em execução http://localhost:${PORT}`);

@@ -55,7 +55,16 @@
             <li class="nav-item">
                 <a href="/compras" class="nav-link <%= pageType === 'Compras' ? 'active' : '' %>" aria-current="page">
                     <i class="bi bi-receipt"></i>
-                    Compras
+                    Minhas Compras
+                </a>
+            </li>
+            <% } %> 
+
+            <% if (userRole === 1 || userRole === 2) { %> 
+            <li class="nav-item">
+                <a href="/vendas" class="nav-link <%= pageType === 'Vendas' ? 'active' : '' %>" aria-current="page">
+                    <i class="bi bi-receipt"></i>
+                    Minhas Vendas
                 </a>
             </li>
             <% } %> 

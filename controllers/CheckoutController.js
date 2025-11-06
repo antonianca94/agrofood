@@ -419,7 +419,7 @@ const getUserOrdersByVendor = async (req, res) => {
             });
         });
 
-        res.render('orders/index', {
+        res.render('shopping/index', {
             pageTitle: 'Meus Pedidos por Vendedor',
             ordersByVendor: ordersByVendor,
             user,
@@ -473,7 +473,7 @@ const getUserOrders = async (req, res) => {
             order.statusFormatted = statusMap[order.status] || order.status;
         });
         const userRole = 3;
-        res.render('orders/index', {
+        res.render('shopping/index', {
             pageTitle: 'Meus Pedidos',
             orders: orders,
             user,
@@ -574,7 +574,7 @@ const getOrderDetails = async (req, res) => {
         // console.log(items);
         // console.log(order);
 
-        res.render('orders/details/index', {
+        res.render('shopping/details/index', {
             pageTitle: `Pedido #${order.order_number}`,
             order: order,
             items: items,
@@ -589,6 +589,295 @@ const getOrderDetails = async (req, res) => {
     }
 };
 
+
+// ==================== PEDIDOS RECEBIDOS PELO VENDEDOR ====================
+
+const getVendorOrders = async (req, res) => {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).redirect('/login');
+        }
+
+        const user = req.user;
+        const userId = req.user.id;
+        const userRole = req.user.roles_id;
+
+        // Buscar o vendor associado ao usuário
+        const vendorResponse = await axios.get(`${API_BASE_URL}/vendors/user/${userId}`);
+        
+        if (vendorResponse.status === 404) {
+            return res.status(404).send('Vendedor não encontrado');
+        }
+
+        const vendor = vendorResponse.data;
+        const vendorId = vendor.id;
+
+        console.log('🔍 Vendor ID:', vendorId);
+        console.log('🔍 URL da requisição:', `${API_BASE_URL}/vendors/${vendorId}/orders`);
+
+        let orders = []; // ✅ Declarada fora do try interno
+
+        // Buscar pedidos do vendedor usando a rota existente
+        try {
+            const ordersResponse = await axios.get(`${API_BASE_URL}/vendors/${vendorId}/orders`);
+            
+            console.log('📦 Response status:', ordersResponse.status);
+            console.log('📦 Response data:', JSON.stringify(ordersResponse.data, null, 2));
+
+            if (ordersResponse.status !== 200) {
+                console.error('Erro ao buscar pedidos do vendedor:', ordersResponse.status);
+                return res.status(500).send('Erro ao buscar pedidos');
+            }
+
+            const ordersData = ordersResponse.data;
+            orders = ordersData.orders || []; // ✅ Atribuição feita aqui
+        } catch (error) {
+            console.error('❌ Erro na requisição de pedidos:', error.message);
+            if (error.response) {
+                console.error('❌ Response status:', error.response.status);
+                console.error('❌ Response data:', error.response.data);
+            }
+            return res.status(500).send('Erro ao buscar pedidos: ' + error.message);
+        }
+
+        // Formatar valores
+        orders.forEach(order => {
+            order.totalFormatted = parseFloat(order.total).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+
+            const date = new Date(order.created_at);
+            order.createdAtFormatted = date.toLocaleDateString('pt-BR');
+
+            const statusMap = {
+                'pending': 'Pendente',
+                'processing': 'Processando',
+                'shipped': 'Enviado',
+                'delivered': 'Entregue',
+                'cancelled': 'Cancelado'
+            };
+            order.statusFormatted = statusMap[order.status] || order.status;
+        });
+
+        res.render('orders/index', {
+            pageTitle: 'Pedidos Recebidos',
+            orders: orders,
+            vendor: vendor,
+            user,
+            username: req.user.username,
+            userRole
+        });
+
+    } catch (error) {
+        console.error('Erro ao buscar pedidos do vendedor:', error);
+        res.status(500).send('Erro interno do servidor');
+    }
+};
+
+
+// Buscar detalhes de um pedido específico do vendedor
+const getVendorOrderDetails = async (req, res) => {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).redirect('/login');
+        }
+
+        const user = req.user;
+        const userId = req.user.id;
+        const orderId = req.params.id;
+        const userRole = req.user.roles_id;
+
+        // Buscar o vendor associado ao usuário
+        const vendorResponse = await axios.get(`${API_BASE_URL}/vendors/user/${userId}`);
+        
+        if (vendorResponse.status === 404) {
+            return res.status(404).send('Vendedor não encontrado');
+        }
+
+        const vendor = vendorResponse.data;
+
+        // Buscar detalhes do pedido usando a rota existente
+        const orderResponse = await axios.get(`${API_BASE_URL}/vendors/${vendor.id}/orders/${orderId}/details`);
+
+        if (orderResponse.status === 404) {
+            return res.status(404).send('Pedido não encontrado');
+        }
+
+        if (orderResponse.status !== 200) {
+            console.error('Erro ao buscar pedido:', orderResponse.status);
+            return res.status(500).send('Erro ao buscar pedido');
+        }
+
+        const data = orderResponse.data;
+        const order = data.order;
+        const items = data.items;
+
+        // Verificar se o pedido pertence ao vendedor
+        if (order.vendors_id !== vendor.id) {
+            return res.status(403).send('Acesso negado - Este pedido não pertence a você');
+        }
+
+        // Buscar informações do comprador da tabela buyers
+        let buyer = null;
+        if (order.buyers_id) {
+            try {
+                const buyerResponse = await axios.get(`${API_BASE_URL}/buyers/${order.buyers_id}`);
+                if (buyerResponse.status === 200) {
+                    buyer = buyerResponse.data;
+                }
+            } catch (error) {
+                console.error('Erro ao buscar informações do comprador:', error);
+            }
+        }
+        
+        // Se não tiver buyer, usar dados do pedido
+        if (!buyer) {
+            buyer = {
+                name: order.buyer_name || order.BuyerName || 'Cliente',
+                phone: order.buyer_phone || order.BuyerPhone || '',
+                email: null
+            };
+        }
+
+        // Formatar valores
+        order.totalFormatted = parseFloat(order.total).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+
+        const date = new Date(order.created_at);
+        order.createdAtFormatted = date.toLocaleDateString('pt-BR');
+
+        const statusMap = {
+            'pending': 'Pendente',
+            'processing': 'Processando',
+            'shipped': 'Enviado',
+            'delivered': 'Entregue',
+            'cancelled': 'Cancelado'
+        };
+        order.statusFormatted = statusMap[order.status] || order.status;
+
+        const paymentMap = {
+            'pix': 'PIX',
+            'boleto': 'Boleto Bancário',
+            'credit_card': 'Cartão de Crédito',
+            'debit_card': 'Cartão de Débito'
+        };
+        order.paymentMethodFormatted = paymentMap[order.payment_method] || order.payment_method;
+
+        // Buscar imagens para cada produto e formatar itens
+        for (const item of items) {
+            // Formatar preços
+            item.priceFormatted = parseFloat(item.price).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+            item.subtotal = item.price * item.quantity;
+            item.subtotalFormatted = item.subtotal.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+
+            // Buscar imagem featured do produto
+            try {
+                const imageRes = await axios.get(`${API_BASE_URL}/images/${item.product_id}`);
+                if (imageRes.status === 200) {
+                    const images = imageRes.data;
+                    const featured = images.find(img => img.type === 'featured_image');
+                    item.featuredImage = featured ? featured.path : null;
+                }
+            } catch (error) {
+                console.error(`Erro ao buscar imagem do produto ${item.products_id}:`, error);
+                item.featuredImage = null;
+            }
+        }
+
+        res.render('orders/details/index', {
+            pageTitle: `Pedido #${order.order_number}`,
+            order: order,
+            items: items,
+            buyer: buyer,
+            vendor: vendor,
+            user,
+            username: req.user.username,
+            userRole
+        });
+
+    } catch (error) {
+        console.error('Erro ao buscar detalhes do pedido:', error);
+        res.status(500).send('Erro interno do servidor');
+    }
+};
+
+// Atualizar status de um pedido (apenas vendedor pode fazer isso)
+const updateOrderStatus = async (req, res) => {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ error: 'Usuário não autenticado' });
+        }
+
+        const userId = req.user.id;
+        const orderId = req.params.id;
+        const { status } = req.body;
+
+        // Validar status
+        const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+        if (!status || !validStatuses.includes(status)) {
+            return res.status(400).json({ error: 'Status inválido' });
+        }
+
+        // Buscar o vendor associado ao usuário
+        const vendorResponse = await axios.get(`${API_BASE_URL}/vendors/user/${userId}`);
+        
+        if (vendorResponse.status === 404) {
+            return res.status(404).json({ error: 'Vendedor não encontrado' });
+        }
+
+        const vendor = vendorResponse.data;
+
+        // Buscar o pedido para verificar se pertence ao vendedor
+        const orderResponse = await axios.get(`${API_BASE_URL}/orders/${orderId}`);
+        
+        if (orderResponse.status === 404) {
+            return res.status(404).json({ error: 'Pedido não encontrado' });
+        }
+
+        const order = orderResponse.data;
+
+        // Verificar se o pedido pertence ao vendedor
+        if (order.vendors_id !== vendor.id) {
+            return res.status(403).json({ error: 'Acesso negado' });
+        }
+
+        // Atualizar status usando a rota existente
+        const updateResponse = await axios.patch(
+            `${API_BASE_URL}/vendors/${vendor.id}/orders/${orderId}/status`,
+            { status }
+        );
+
+        if (updateResponse.status !== 200) {
+            return res.status(updateResponse.status).json({ 
+                error: 'Erro ao atualizar status do pedido' 
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Status do pedido atualizado com sucesso',
+            order_id: orderId,
+            new_status: status
+        });
+
+    } catch (error) {
+        console.error('Erro ao atualizar status do pedido:', error);
+        res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+};
+
+
+
+
 module.exports = {
     getCheckout,
     processCheckout,
@@ -599,4 +888,7 @@ module.exports = {
     processMultiVendorCheckout,
     getUserOrdersByVendor,
 
+    getVendorOrders,
+    getVendorOrderDetails,
+    updateOrderStatus
 };
