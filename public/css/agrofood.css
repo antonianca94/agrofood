@@ -167,7 +167,7 @@ input.file-caption-name.form-control.kv-fileinput-caption {
 }
  */
  .carousel-item {
-    height: 350px;
+    max-height: 350px;
 }
 
 .slick-prev:before, .slick-next:before {
